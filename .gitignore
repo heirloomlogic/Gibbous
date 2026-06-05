@@ -1,0 +1,14 @@
+**/xcuserdata
+*.d
+*.dia
+*.swiftdeps
+*.swiftmodule
+.build/
+.DS_Store
+.swiftpm
+.vscode
+build
+node_modules
+tmp
+.context
+.superpowers
