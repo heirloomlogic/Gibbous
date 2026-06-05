@@ -1,0 +1,42 @@
+{
+  "originHash" : "72ec5369240a39cba6e132349b19caa478b013e18677c60bff35e9eb0ef01484",
+  "pins" : [
+    {
+      "identity" : "astronomykit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/heirloomlogic/AstronomyKit",
+      "state" : {
+        "branch" : "main",
+        "revision" : "b9467e2885fc7990095c0d4fa6010ee256eb42c3"
+      }
+    },
+    {
+      "identity" : "persnicket",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/HeirloomLogic/Persnicket",
+      "state" : {
+        "revision" : "19b01287705febe6e6ff150c764ad022dca8188e",
+        "version" : "2.0.1"
+      }
+    },
+    {
+      "identity" : "swidux",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/heirloomlogic/Swidux",
+      "state" : {
+        "branch" : "main",
+        "revision" : "47dcc06b76d7e5710da875cd1f648b4606124e8e"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax",
+      "state" : {
+        "revision" : "9de99a78f099e59caf2b2beec65a4c45d54b2081",
+        "version" : "603.0.1"
+      }
+    }
+  ],
+  "version" : 3
+}

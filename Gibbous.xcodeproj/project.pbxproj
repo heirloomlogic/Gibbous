@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D1B0FA1100000000000000A1 /* AstronomyKit in Frameworks */ = {isa = PBXBuildFile; productRef = D1B0FA1100000000000000B1 /* AstronomyKit */; };
+		D1B0FA1100000000000000A2 /* Swidux in Frameworks */ = {isa = PBXBuildFile; productRef = D1B0FA1100000000000000B2 /* Swidux */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9C8088B72FD0A8CF00B3B2CA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D1B0FA1100000000000000A1 /* AstronomyKit in Frameworks */,
+				D1B0FA1100000000000000A2 /* Swidux in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,8 @@
 			);
 			name = Gibbous;
 			packageProductDependencies = (
+				D1B0FA1100000000000000B1 /* AstronomyKit */,
+				D1B0FA1100000000000000B2 /* Swidux */,
 			);
 			productName = Gibbous;
 			productReference = 9C8088A92FD0A8CD00B3B2CA /* Gibbous.app */;
@@ -195,6 +204,10 @@
 			);
 			mainGroup = 9C8088A02FD0A8CD00B3B2CA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D1B0FA1100000000000000C1 /* XCRemoteSwiftPackageReference "AstronomyKit" */,
+				D1B0FA1100000000000000C2 /* XCRemoteSwiftPackageReference "Swidux" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9C8088AA2FD0A8CD00B3B2CA /* Products */;
 			projectDirPath = "";
@@ -403,6 +416,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -417,7 +431,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -435,6 +449,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -449,7 +464,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -469,7 +484,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Gibbous.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Gibbous";
 			};
 			name = Debug;
@@ -490,7 +505,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Gibbous.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Gibbous";
 			};
 			name = Release;
@@ -509,7 +524,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = Gibbous;
 			};
 			name = Debug;
@@ -528,7 +543,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = Gibbous;
 			};
 			name = Release;
@@ -573,6 +588,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D1B0FA1100000000000000C1 /* XCRemoteSwiftPackageReference "AstronomyKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/heirloomlogic/AstronomyKit";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		D1B0FA1100000000000000C2 /* XCRemoteSwiftPackageReference "Swidux" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/heirloomlogic/Swidux";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D1B0FA1100000000000000B1 /* AstronomyKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D1B0FA1100000000000000C1 /* XCRemoteSwiftPackageReference "AstronomyKit" */;
+			productName = AstronomyKit;
+		};
+		D1B0FA1100000000000000B2 /* Swidux */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D1B0FA1100000000000000C2 /* XCRemoteSwiftPackageReference "Swidux" */;
+			productName = Swidux;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9C8088A12FD0A8CD00B3B2CA /* Project object */;
 }
