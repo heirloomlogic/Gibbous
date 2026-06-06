@@ -27,15 +27,8 @@ struct RetroView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            VStack(spacing: 12) {
-                RetroGroupBox(title: "Moon") {
-                    moonDisc.frame(width: 150, height: 150)
-                }
-                RetroGroupBox(title: "Look") {
-                    LookDensityControls(tint: RetroTheme.ink)
-                        .font(RetroTheme.font(11))
-                        .frame(maxWidth: .infinity)
-                }
+            RetroGroupBox(title: "Moon") {
+                moonDisc.frame(width: 150, height: 150)
             }
             .frame(width: 178)
 
@@ -94,27 +87,6 @@ struct RetroView: View {
         }
         .font(RetroTheme.font(11))
         .lineLimit(1)
-    }
-}
-
-/// Retro moon-only: a tiny dithered disc in a System-7 frame, corner companion.
-struct RetroMoonOnlyView: View {
-    @Environment(AppStore.self) private var store
-
-    var body: some View {
-        RetroGroupBox(title: "Moon") {
-            Group {
-                if let readout = store.readout {
-                    MoonDiscView(request: MoonRenderRequest(readout: readout, style: .retro, ditherCell: 1))
-                        .background(RetroTheme.sky)
-                        .frame(width: 96, height: 96)
-                } else {
-                    MoonUnavailableView().frame(width: 96, height: 96)
-                }
-            }
-        }
-        .padding(10)
-        .background(RetroTheme.window)
     }
 }
 

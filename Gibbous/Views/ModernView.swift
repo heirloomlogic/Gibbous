@@ -3,7 +3,7 @@
 //  Gibbous
 //
 //  The 2026 skin: a clean dark dashboard with a hero moon and monospaced-digit
-//  readouts, plus the moon-only "desktop pet" variant.
+//  readouts.
 //
 
 import SwiftUI
@@ -24,9 +24,6 @@ struct ModernView: View {
             header
             Divider().overlay(ModernTheme.hairline)
             stats
-            Divider().overlay(ModernTheme.hairline)
-            LookDensityControls(tint: ModernTheme.secondary)
-                .padding(.horizontal, 16).padding(.vertical, 10)
         }
         .frame(width: 300)
         .background(ModernTheme.background)
@@ -95,23 +92,5 @@ private struct StatRow: View {
             .font(.system(.callout, design: .rounded).monospacedDigit())
         }
         .padding(.horizontal, 16).padding(.vertical, 5)
-    }
-}
-
-/// Modern moon-only: a clean hero disc as a desktop pet.
-struct ModernMoonOnlyView: View {
-    @Environment(AppStore.self) private var store
-
-    var body: some View {
-        Group {
-            if let readout = store.readout {
-                MoonDiscView(request: MoonRenderRequest(readout: readout, style: .modern))
-                    .padding(10)
-            } else {
-                MoonUnavailableView()
-            }
-        }
-        .frame(width: 140, height: 140)
-        .background(ModernTheme.background.opacity(0.001))  // hit-testable, ~transparent
     }
 }

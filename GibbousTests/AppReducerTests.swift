@@ -6,7 +6,6 @@
 //  through to the KeyValueStore via their effect.
 //
 
-import CoreGraphics
 import Foundation
 import Testing
 
@@ -42,30 +41,12 @@ struct AppReducerTests {
         #expect(kv.value(.displayStyle) == .retro)
     }
 
-    @Test func setDensityMutatesAndPersists() async {
-        let reducer = makeReducer()
-        var state = AppState()
-        await run(reducer.reduce(state: &state, action: .setDensity(.moonOnly)))
-        #expect(state.density == .moonOnly)
-        #expect(kv.value(.density) == .moonOnly)
-    }
-
     @Test func setSoundsEnabledMutatesAndPersists() async {
         let reducer = makeReducer()
         var state = AppState()
         await run(reducer.reduce(state: &state, action: .setSoundsEnabled(true)))
         #expect(state.soundsEnabled)
         #expect(kv.value(.soundsEnabled) == true)
-    }
-
-    @Test func setPresentationAndFrameMutate() {
-        let reducer = makeReducer()
-        var state = AppState()
-        _ = reducer.reduce(state: &state, action: .setPresentation(.floating))
-        let frame = CGRect(x: 10, y: 20, width: 300, height: 400)
-        _ = reducer.reduce(state: &state, action: .setFloatingFrame(frame))
-        #expect(state.presentation == .floating)
-        #expect(state.floatingFrame == frame)
     }
 
     @Test func tickReturnsAReadoutRecomputeEffect() {

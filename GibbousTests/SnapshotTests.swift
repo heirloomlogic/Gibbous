@@ -8,11 +8,11 @@ import Testing
 @MainActor
 struct SnapshotTests {
     static let outDir = FileManager.default.temporaryDirectory.appendingPathComponent(
-        "gibbous_spike", isDirectory: true)
+        "gibbous_snapshots", isDirectory: true)
 
     // A smoke test for the composed view pipeline (also writes reference PNGs
     // to the temp dir for the verification checklist). Requires a GPU.
-    @Test func snapshotFourPersonalities() throws {
+    @Test func snapshotBothPersonalities() throws {
         try FileManager.default.createDirectory(at: Self.outDir, withIntermediateDirectories: true)
         RetroFont.registerBundledFonts()
 
@@ -24,15 +24,12 @@ struct SnapshotTests {
         let store = AppStore.configured(environment: env)
         store.send(.readoutUpdated(try MoonAlmanac.readout(at: Date(), timeZone: .current)))
 
-        let combos: [(String, DisplayStyle, Density)] = [
-            ("modern-stats", .modern, .stats),
-            ("modern-moononly", .modern, .moonOnly),
-            ("retro-stats", .retro, .stats),
-            ("retro-moononly", .retro, .moonOnly),
+        let personalities: [(String, DisplayStyle)] = [
+            ("modern", .modern),
+            ("retro", .retro),
         ]
-        for (name, style, density) in combos {
+        for (name, style) in personalities {
             store.send(.setDisplayStyle(style))
-            store.send(.setDensity(density))
             let image = snapshot(CompanionView().environment(store), name: "personality-\(name).png")
             #expect(image != nil && image!.width > 100, "\(name) rendered blank")
         }
