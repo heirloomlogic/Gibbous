@@ -20,14 +20,14 @@ nonisolated enum DisplayStyle: String, Codable, Sendable, CaseIterable {
 
 /// The chrome-density axis.
 nonisolated enum Density: String, Codable, Sendable, CaseIterable {
-    case stats      // full readout
-    case moonOnly   // just the disc
+    case stats  // full readout
+    case moonOnly  // just the disc
 }
 
 /// Where the companion currently lives.
 nonisolated enum Presentation: String, Codable, Sendable {
-    case menuBarPopdown   // anchored to the status item
-    case floating         // torn off into a desktop panel
+    case menuBarPopdown  // anchored to the status item
+    case floating  // torn off into a desktop panel
 }
 
 @Swidux

@@ -15,8 +15,10 @@ nonisolated struct AppEnvironment: Sendable {
     var timeZone: TimeZone
     /// Current wall-clock instant (injectable for tests).
     var now: @Sendable () -> Date
-    /// Compute a readout for an instant; throws → "unavailable".
-    var computeReadout: @Sendable (Date, TimeZone) throws -> MoonReadout
+    /// Compute a readout for an instant; throws → "unavailable". When the
+    /// instant is still in the same lunation, the caller passes the previous
+    /// readout's events to reuse instead of re-running the phase searches.
+    var computeReadout: @Sendable (Date, TimeZone, LunationEvents?) throws -> MoonReadout
     /// Fire the flagship full-moon cue. Wired by the shell; no-op until then.
     var playHowl: @Sendable () -> Void
 
@@ -25,13 +27,17 @@ nonisolated struct AppEnvironment: Sendable {
             keyValue: UserDefaultsKeyValueStore(),
             timeZone: .current,
             now: { Date() },
-            computeReadout: { try MoonAlmanac.readout(at: $0, timeZone: $1) },
+            computeReadout: { date, timeZone, reuse in
+                let events = try reuse ?? MoonAlmanac.lunationEvents(containing: date)
+                return try MoonAlmanac.readout(at: date, timeZone: timeZone, events: events)
+            },
             playHowl: {
                 // Bundled, licensed audio only. No-ops until a howl file is
                 // added to Resources/Sounds (see the build checklist).
                 Task { @MainActor in
                     let bundle = Bundle.main
-                    let url = bundle.url(forResource: "howl", withExtension: "wav")
+                    let url =
+                        bundle.url(forResource: "howl", withExtension: "wav")
                         ?? bundle.url(forResource: "howl", withExtension: "aiff")
                         ?? bundle.url(forResource: "howl", withExtension: "m4a")
                     if let url, let sound = NSSound(contentsOf: url, byReference: true) {

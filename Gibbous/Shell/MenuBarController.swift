@@ -10,8 +10,8 @@
 //
 
 import AppKit
-import SwiftUI
 import Observation
+import SwiftUI
 
 @MainActor
 final class MenuBarController: NSObject, NSPopoverDelegate {
@@ -28,6 +28,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
         super.init()
         configureStatusItem()
         configurePopover()
+        restoreFloatingPanelIfNeeded()
         refreshGlyph(force: true)
         startGlyphTimer()
         observeGlyphInputs()
@@ -65,7 +66,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
 
     private func togglePopdown() {
         if let panel = floatingPanel {
-            panel.makeKeyAndOrderFront(nil)   // already torn off → focus it
+            panel.makeKeyAndOrderFront(nil)  // already torn off → focus it
             return
         }
         if popover.isShown {
@@ -80,21 +81,46 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
     private func tearOff() {
         guard floatingPanel == nil else { return }
         popover.performClose(nil)
+        presentFloatingPanel(at: nil)  // signature gesture: open at the cursor
+        store.send(.setPresentation(.floating))
+    }
+
+    /// Reopen a torn-off panel at launch if that's where we left off.
+    private func restoreFloatingPanelIfNeeded() {
+        guard store.presentation == .floating else { return }
+        presentFloatingPanel(at: store.floatingFrame)  // presentation already .floating
+    }
+
+    /// Build and show the floating panel. `frame` restores a saved position
+    /// (clamped to a visible screen); `nil` opens at the cursor.
+    private func presentFloatingPanel(at frame: CGRect?) {
+        guard floatingPanel == nil else { return }
 
         let panel = FloatingPanel(
             rootView: CompanionView().environment(store),
             alwaysOnTop: store.alwaysOnTop)
         panel.onClose = { [weak self] in self?.handlePanelClosed() }
+        panel.onFrameChange = { [weak self] in self?.store.send(.setFloatingFrame($0)) }
         panel.setContentSize(panel.contentView?.fittingSize ?? NSSize(width: 280, height: 360))
-        positionAtCursor(panel)
+
+        if let frame, isOnScreen(frame) {
+            panel.setFrame(frame, display: false)
+        } else {
+            positionAtCursor(panel)
+        }
         panel.makeKeyAndOrderFront(nil)
 
         floatingPanel = panel
-        store.send(.setPresentation(.floating))
+    }
+
+    /// Whether a saved frame still overlaps a connected screen (displays may
+    /// have changed since it was saved).
+    private func isOnScreen(_ frame: CGRect) -> Bool {
+        NSScreen.screens.contains { $0.visibleFrame.intersects(frame) }
     }
 
     private func rejoin() {
-        floatingPanel?.close()   // triggers handlePanelClosed via onClose
+        floatingPanel?.close()  // triggers handlePanelClosed via onClose
     }
 
     private func handlePanelClosed() {
@@ -150,14 +176,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
     @objc private func menuAbout() {
         AboutWindow.show()
     }
-    @objc private func menuSettings() {
-        NSApp.activate(ignoringOtherApps: true)
-        if #available(macOS 14, *) {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-        } else {
-            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-        }
-    }
+    @objc private func menuSettings() { SettingsWindow.show(store: store) }
     @objc private func menuQuit() { NSApp.terminate(nil) }
 
     // MARK: - Glyph
@@ -173,7 +192,7 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
     private func observeGlyphInputs() {
         withObservationTracking {
             _ = store.displayStyle
-            _ = store.readout?.phaseName   // coarse: name changes ~per phase, not per second
+            _ = store.readout?.phaseName  // coarse: name changes ~per phase, not per second
         } onChange: { [weak self] in
             Task { @MainActor in
                 self?.refreshGlyph()
@@ -194,8 +213,8 @@ final class MenuBarController: NSObject, NSPopoverDelegate {
     func popoverShouldDetach(_ popover: NSPopover) -> Bool { false }
 }
 
-private extension NSMenu {
-    func addItem(withAction title: String, target: AnyObject, action: Selector) {
+extension NSMenu {
+    fileprivate func addItem(withAction title: String, target: AnyObject, action: Selector) {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
         item.target = target
         addItem(item)

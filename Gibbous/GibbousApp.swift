@@ -14,9 +14,10 @@ struct GibbousApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        Settings {
-            SettingsView()
-                .environment(appDelegate.store)
-        }
+        // Menu-bar accessory app: the real UI lives in the status item / floating
+        // panel, and Settings is shown via SettingsWindow (the SwiftUI Settings
+        // scene's open action does not surface for an .accessory app). This empty
+        // scene just satisfies App's "needs a Scene" requirement.
+        Settings { EmptyView() }
     }
 }

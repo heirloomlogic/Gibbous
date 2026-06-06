@@ -1,12 +1,14 @@
 import AppKit
-import SwiftUI
 import ImageIO
+import SwiftUI
 import Testing
+
 @testable import Gibbous
 
 @MainActor
 struct SnapshotTests {
-    static let outDir = FileManager.default.temporaryDirectory.appendingPathComponent("gibbous_spike", isDirectory: true)
+    static let outDir = FileManager.default.temporaryDirectory.appendingPathComponent(
+        "gibbous_spike", isDirectory: true)
 
     // A smoke test for the composed view pipeline (also writes reference PNGs
     // to the temp dir for the verification checklist). Requires a GPU.
@@ -17,7 +19,7 @@ struct SnapshotTests {
         let env = AppEnvironment(
             keyValue: InMemoryKeyValueStore(), timeZone: .current,
             now: { Date() },
-            computeReadout: { try MoonAlmanac.readout(at: $0, timeZone: $1) },
+            computeReadout: { date, tz, _ in try MoonAlmanac.readout(at: date, timeZone: tz) },
             playHowl: {})
         let store = AppStore.configured(environment: env)
         store.send(.readoutUpdated(try MoonAlmanac.readout(at: Date(), timeZone: .current)))
@@ -40,12 +42,13 @@ struct SnapshotTests {
     private func snapshot(_ view: some View, name: String) -> CGImage? {
         let hosting = NSHostingView(rootView: view)
         hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
-        let window = NSWindow(contentRect: hosting.frame, styleMask: [.borderless],
-                              backing: .buffered, defer: false)
+        let window = NSWindow(
+            contentRect: hosting.frame, styleMask: [.borderless],
+            backing: .buffered, defer: false)
         window.contentView = hosting
         hosting.layoutSubtreeIfNeeded()
         hosting.displayIfNeeded()
-        RunLoop.current.run(until: Date().addingTimeInterval(0.2))   // let the Metal disc render
+        RunLoop.current.run(until: Date().addingTimeInterval(0.2))  // let the Metal disc render
 
         guard let rep = hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds) else { return nil }
         hosting.cacheDisplay(in: hosting.bounds, to: rep)

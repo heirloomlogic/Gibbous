@@ -20,10 +20,10 @@ struct CompanionView: View {
 
     @ViewBuilder private var content: some View {
         switch (store.displayStyle, store.density) {
-        case (.modern, .stats):     ModernView()
-        case (.modern, .moonOnly):  ModernMoonOnlyView()
-        case (.retro, .stats):      RetroView()
-        case (.retro, .moonOnly):   RetroMoonOnlyView()
+        case (.modern, .stats): ModernView()
+        case (.modern, .moonOnly): ModernMoonOnlyView()
+        case (.retro, .stats): RetroView()
+        case (.retro, .moonOnly): RetroMoonOnlyView()
         }
     }
 }
@@ -37,12 +37,16 @@ struct LookDensityControls: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            toggle(title: store.displayStyle == .retro ? "Modern" : "Retro",
-                   systemImage: "circle.lefthalf.filled") {
+            toggle(
+                title: store.displayStyle == .retro ? "Modern" : "Retro",
+                systemImage: "circle.lefthalf.filled"
+            ) {
                 store.send(.setDisplayStyle(store.displayStyle == .retro ? .modern : .retro))
             }
-            toggle(title: store.density == .stats ? "Moon only" : "Stats",
-                   systemImage: "rectangle.expand.vertical") {
+            toggle(
+                title: store.density == .stats ? "Moon only" : "Stats",
+                systemImage: "rectangle.expand.vertical"
+            ) {
                 store.send(.setDensity(store.density == .stats ? .moonOnly : .stats))
             }
         }

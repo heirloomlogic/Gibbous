@@ -145,6 +145,6 @@ struct RetroGroupBox<Content: View>: View {
                     .background(RetroTheme.window)
                     .offset(x: 12, y: -7)
             }
-            .padding(.top, 9)   // room above the frame for the notched title
+            .padding(.top, 9)  // room above the frame for the notched title
     }
 }

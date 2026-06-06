@@ -9,6 +9,22 @@
 import Foundation
 
 nonisolated extension MoonReadout {
+    // MARK: Lunation cache
+
+    /// This readout's lunation events, to reuse on the next tick without
+    /// re-running the expensive phase searches (see `AppReducer.tick`).
+    var lunationEvents: LunationEvents {
+        LunationEvents(
+            lastNewMoon: lastNewMoon, firstQuarter: firstQuarter, fullMoon: fullMoon,
+            lastQuarter: lastQuarter, nextNewMoon: nextNewMoon, lunationNumber: lunationNumber)
+    }
+
+    /// Whether `date` still falls in this readout's lunation, so its cached
+    /// events can be reused. A backward jump (e.g. a system clock change) also
+    /// fails this and forces a recompute.
+    func containsLunation(of date: Date) -> Bool {
+        lastNewMoon <= date && date < nextNewMoon
+    }
 
     /// A labelled phase event in the current lunation.
     struct PhaseEvent: Identifiable {
@@ -35,7 +51,7 @@ nonisolated extension MoonReadout {
     var moonAgeText: String { "\(moonAge.days)d \(moonAge.hours)h \(moonAge.minutes)m" }
 
     var moonDistanceText: String {
-        "\(Self.integer.string(from: NSNumber(value: moonDistanceKM)) ?? "—") km"
+        "\(moonDistanceKM.formatted(.number.precision(.fractionLength(0)))) km"
     }
     var moonDistanceEarthRadiiText: String { String(format: "%.1f ER", moonDistanceEarthRadii) }
     var sunDistanceAUText: String { String(format: "%.3f AU", sunDistanceAU) }
@@ -57,15 +73,14 @@ nonisolated extension MoonReadout {
     // Cached once (creating a DateFormatter is expensive); the timezone is
     // applied per call. Formatting runs on the main actor in the views.
 
-    private static let integer: NumberFormatter = {
-        let f = NumberFormatter(); f.numberStyle = .decimal; f.maximumFractionDigits = 0; return f
-    }()
     private static let clock = formatter("HH:mm:ss")
     private static let day = formatter("d MMM yyyy")
     private static let event = formatter("d MMM HH:mm")
 
     private static func formatter(_ format: String) -> DateFormatter {
-        let f = DateFormatter(); f.dateFormat = format; return f
+        let f = DateFormatter()
+        f.dateFormat = format
+        return f
     }
     private func string(_ date: Date, _ formatter: DateFormatter) -> String {
         formatter.timeZone = timeZone

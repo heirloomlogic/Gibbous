@@ -22,8 +22,10 @@ struct About: View {
                 .multilineTextAlignment(.center)
             Divider().frame(width: 200)
             Text(
-                "A homage to Moontool by John Walker (1988) and the Macintosh "
-                + "Moon Tool by Richard Knuckey. Built on AstronomyKit."
+                """
+                A homage to Moontool by John Walker (1988) and the Macintosh \
+                Moon Tool by Richard Knuckey. Built on AstronomyKit.
+                """
             )
             .font(.footnote)
             .foregroundStyle(.secondary)

@@ -10,10 +10,10 @@
 
 import Foundation
 import Testing
+
 @testable import Gibbous
 
 struct DerivationsTests {
-
     // MARK: Julian Date
 
     @Test func julianDateAtJ2000EpochIsTheEpochConstant() {

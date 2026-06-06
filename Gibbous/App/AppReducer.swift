@@ -19,8 +19,13 @@ nonisolated struct AppReducer {
 
         case .tick(let date):
             // The live clock is read from the recomputed readout, not stored
-            // separately — the tick exists only to drive the recompute.
-            return computeReadout(for: date)
+            // separately — the tick exists only to drive the recompute. Reuse
+            // the current lunation's phase events while "now" is still inside it,
+            // so only the cheap instantaneous queries run each second.
+            let reuse = state.readout.flatMap {
+                $0.containsLunation(of: date) ? $0.lunationEvents : nil
+            }
+            return computeReadout(for: date, reusing: reuse)
 
         case .readoutUpdated(let readout):
             state.readout = readout
@@ -71,11 +76,12 @@ nonisolated struct AppReducer {
     }
 
     /// Compute the readout off the main actor; throwing yields "unavailable".
-    private func computeReadout(for date: Date) -> AppEffect {
+    /// `reuse` carries the current lunation's events when they still apply.
+    private func computeReadout(for date: Date, reusing reuse: LunationEvents?) -> AppEffect {
         let compute = environment.computeReadout
         let timeZone = environment.timeZone
         return { send in
-            if let readout = try? compute(date, timeZone) {
+            if let readout = try? compute(date, timeZone, reuse) {
                 await send(.readoutUpdated(readout))
             } else {
                 await send(.readoutUnavailable)

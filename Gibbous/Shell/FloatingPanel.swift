@@ -11,8 +11,11 @@
 import AppKit
 import SwiftUI
 
-final class FloatingPanel: NSPanel {
+final class FloatingPanel: NSPanel, NSWindowDelegate {
     var onClose: (() -> Void)?
+    /// Reports the panel's frame as it moves, so the shell can persist it for
+    /// window restore on the next launch.
+    var onFrameChange: ((CGRect) -> Void)?
 
     init(rootView: some View, alwaysOnTop: Bool) {
         super.init(
@@ -20,6 +23,7 @@ final class FloatingPanel: NSPanel {
             styleMask: [.titled, .closable, .fullSizeContentView, .nonactivatingPanel],
             backing: .buffered, defer: false
         )
+        delegate = self
         isFloatingPanel = true
         level = alwaysOnTop ? .floating : .normal
         isMovableByWindowBackground = true
@@ -47,4 +51,9 @@ final class FloatingPanel: NSPanel {
         onClose?()
         super.close()
     }
+
+    // MARK: - NSWindowDelegate (report frame for restore)
+
+    func windowDidMove(_ notification: Notification) { onFrameChange?(frame) }
+    func windowDidResize(_ notification: Notification) { onFrameChange?(frame) }
 }

@@ -24,8 +24,9 @@ struct SettingsView: View {
                 }
             }
             Section("Companion") {
-                Toggle("Always on top when torn off",
-                       isOn: store.binding(\.alwaysOnTop, sending: AppAction.setAlwaysOnTop))
+                Toggle(
+                    "Always on top when torn off",
+                    isOn: store.binding(\.alwaysOnTop, sending: AppAction.setAlwaysOnTop))
             }
             Section("Charm") {
                 Toggle("Phase sounds", isOn: store.binding(\.soundsEnabled, sending: AppAction.setSoundsEnabled))

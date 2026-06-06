@@ -8,11 +8,36 @@
 //  "unavailable" state rather than crashing.
 //
 
-import Foundation
 import AstronomyKit
+import Foundation
+
+/// The five phase events of one lunation plus its lunation number. These are
+/// fixed for the whole ~29.5-day lunation, so they're computed once (the
+/// expensive `searchPhase` root-finding) and reused across clock ticks until
+/// "now" crosses into the next lunation. See `AppReducer.tick`.
+nonisolated struct LunationEvents: Sendable, Equatable {
+    let lastNewMoon: Date
+    let firstQuarter: Date
+    let fullMoon: Date
+    let lastQuarter: Date
+    let nextNewMoon: Date
+    let lunationNumber: Int
+}
 
 nonisolated enum MoonAlmanac {
+    /// Fresh readout for an instant — computes the lunation events too. Used by
+    /// tests and any caller without a cached lunation to reuse.
     static func readout(at date: Date, timeZone: TimeZone) throws -> MoonReadout {
+        try readout(at: date, timeZone: timeZone, events: lunationEvents(containing: date))
+    }
+
+    /// Readout for an instant given its lunation's (precomputed) phase events.
+    /// Only the cheap instantaneous queries run here — the expensive phase
+    /// searches live in `lunationEvents(containing:)`.
+    static func readout(
+        at date: Date, timeZone: TimeZone,
+        events: LunationEvents
+    ) throws -> MoonReadout {
         let t = AstroTime(date)
 
         let phaseAngle = try Moon.phaseAngle(at: t)
@@ -21,17 +46,6 @@ nonisolated enum MoonAlmanac {
 
         let julianDate = Derivations.julianDate(j2000UTDays: t.universalTime)
         let sunKM = Derivations.sunDistanceKM(au: sun.distance)
-
-        // The current lunation's phase events, anchored on the last new moon.
-        let lastNew = try lastNewMoon(onOrBefore: t)
-        let firstQuarter = try Moon.searchPhase(.firstQuarter, after: lastNew)
-        let fullMoon = try Moon.searchPhase(.full, after: lastNew)
-        let lastQuarter = try Moon.searchPhase(.thirdQuarter, after: lastNew)
-        let nextNew = try Moon.searchPhase(.new, after: lastNew.addingDays(1))
-
-        let lunation = Derivations.moonToolLunationNumber(
-            newMoonJD: Derivations.julianDate(j2000UTDays: lastNew.universalTime)
-        )
 
         return MoonReadout(
             now: date,
@@ -47,15 +61,45 @@ nonisolated enum MoonAlmanac {
             sunDistanceKM: sunKM,
             moonSubtendDegrees: libration.apparentDiameter,
             sunSubtendDegrees: Derivations.sunAngularDiameterDegrees(sunDistanceKM: sunKM),
-            lunationNumber: lunation,
-            moonAge: Derivations.moonAge(from: lastNew.date, to: date),
+            lunationNumber: events.lunationNumber,
+            moonAge: Derivations.moonAge(from: events.lastNewMoon, to: date),
+            lastNewMoon: events.lastNewMoon,
+            firstQuarter: events.firstQuarter,
+            fullMoon: events.fullMoon,
+            lastQuarter: events.lastQuarter,
+            nextNewMoon: events.nextNewMoon,
+            subEarthLatitude: libration.subEarthLatitude,
+            subEarthLongitude: libration.subEarthLongitude
+        )
+    }
+
+    /// The phase events of the lunation containing `date`. Convenience over the
+    /// `AstroTime` form so callers needn't depend on AstronomyKit.
+    static func lunationEvents(containing date: Date) throws -> LunationEvents {
+        try lunationEvents(containing: AstroTime(date))
+    }
+
+    /// The phase events of the lunation containing `t`, anchored on the last new
+    /// moon. This is the costly part — five iterative `searchPhase` calls — so
+    /// callers cache the result for the lunation's duration.
+    static func lunationEvents(containing t: AstroTime) throws -> LunationEvents {
+        let lastNew = try lastNewMoon(onOrBefore: t)
+        let firstQuarter = try Moon.searchPhase(.firstQuarter, after: lastNew)
+        let fullMoon = try Moon.searchPhase(.full, after: lastNew)
+        let lastQuarter = try Moon.searchPhase(.thirdQuarter, after: lastNew)
+        let nextNew = try Moon.searchPhase(.new, after: lastNew.addingDays(1))
+
+        let lunation = Derivations.moonToolLunationNumber(
+            newMoonJD: Derivations.julianDate(j2000UTDays: lastNew.universalTime)
+        )
+
+        return LunationEvents(
             lastNewMoon: lastNew.date,
             firstQuarter: firstQuarter.date,
             fullMoon: fullMoon.date,
             lastQuarter: lastQuarter.date,
             nextNewMoon: nextNew.date,
-            subEarthLatitude: libration.subEarthLatitude,
-            subEarthLongitude: libration.subEarthLongitude
+            lunationNumber: lunation
         )
     }
 

@@ -7,10 +7,10 @@
 //
 
 import Testing
+
 @testable import Gibbous
 
 struct MoonGeometryTests {
-
     @Test func newMoonIsUnlit() {
         #expect(MoonGeometry.illuminatedFraction(phaseAngleDegrees: 0) < 0.001)
     }
