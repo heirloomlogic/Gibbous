@@ -10,10 +10,12 @@
 import AppKit
 
 enum StatusItemGlyph {
-    static func image(for readout: MoonReadout?,
-                      style: DisplayStyle,
-                      pointSize: CGFloat = 18,
-                      scale: CGFloat = 2) -> NSImage {
+    static func image(
+        for readout: MoonReadout?,
+        style: DisplayStyle,
+        pointSize: CGFloat = 18,
+        scale: CGFloat = 2
+    ) -> NSImage {
         guard let readout, let renderer = MoonRenderer.shared else {
             return fallback(pointSize: pointSize)
         }
@@ -25,7 +27,7 @@ enum StatusItemGlyph {
             return fallback(pointSize: pointSize)
         }
         let image = NSImage(cgImage: cgImage, size: NSSize(width: pointSize, height: pointSize))
-        image.isTemplate = false   // full-colour / dithered, not a tint template
+        image.isTemplate = false  // full-colour / dithered, not a tint template
         return image
     }
 

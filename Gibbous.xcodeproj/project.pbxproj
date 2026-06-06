@@ -19,19 +19,11 @@
 			remoteGlobalIDString = 9C8088A82FD0A8CD00B3B2CA;
 			remoteInfo = Gibbous;
 		};
-		9C8088C12FD0A8CF00B3B2CA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9C8088A12FD0A8CD00B3B2CA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 9C8088A82FD0A8CD00B3B2CA;
-			remoteInfo = Gibbous;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		9C8088A92FD0A8CD00B3B2CA /* Gibbous.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gibbous.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C8088B62FD0A8CF00B3B2CA /* GibbousTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GibbousTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		9C8088C02FD0A8CF00B3B2CA /* GibbousUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GibbousUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -43,11 +35,6 @@
 		9C8088B92FD0A8CF00B3B2CA /* GibbousTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = GibbousTests;
-			sourceTree = "<group>";
-		};
-		9C8088C32FD0A8CF00B3B2CA /* GibbousUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = GibbousUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,13 +56,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9C8088BD2FD0A8CF00B3B2CA /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -84,7 +64,6 @@
 			children = (
 				9C8088AB2FD0A8CD00B3B2CA /* Gibbous */,
 				9C8088B92FD0A8CF00B3B2CA /* GibbousTests */,
-				9C8088C32FD0A8CF00B3B2CA /* GibbousUITests */,
 				9C8088AA2FD0A8CD00B3B2CA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -94,7 +73,6 @@
 			children = (
 				9C8088A92FD0A8CD00B3B2CA /* Gibbous.app */,
 				9C8088B62FD0A8CF00B3B2CA /* GibbousTests.xctest */,
-				9C8088C02FD0A8CF00B3B2CA /* GibbousUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -113,6 +91,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				9C7925012FD436E8000D308B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				9C8088AB2FD0A8CD00B3B2CA /* Gibbous */,
@@ -137,6 +116,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				9C7925032FD436ED000D308B /* PBXTargetDependency */,
 				9C8088B82FD0A8CF00B3B2CA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
@@ -148,29 +128,6 @@
 			productName = GibbousTests;
 			productReference = 9C8088B62FD0A8CF00B3B2CA /* GibbousTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		9C8088BF2FD0A8CF00B3B2CA /* GibbousUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 9C8088D02FD0A8CF00B3B2CA /* Build configuration list for PBXNativeTarget "GibbousUITests" */;
-			buildPhases = (
-				9C8088BC2FD0A8CF00B3B2CA /* Sources */,
-				9C8088BD2FD0A8CF00B3B2CA /* Frameworks */,
-				9C8088BE2FD0A8CF00B3B2CA /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				9C8088C22FD0A8CF00B3B2CA /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				9C8088C32FD0A8CF00B3B2CA /* GibbousUITests */,
-			);
-			name = GibbousUITests;
-			packageProductDependencies = (
-			);
-			productName = GibbousUITests;
-			productReference = 9C8088C02FD0A8CF00B3B2CA /* GibbousUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -189,10 +146,6 @@
 						CreatedOnToolsVersion = 26.5;
 						TestTargetID = 9C8088A82FD0A8CD00B3B2CA;
 					};
-					9C8088BF2FD0A8CF00B3B2CA = {
-						CreatedOnToolsVersion = 26.5;
-						TestTargetID = 9C8088A82FD0A8CD00B3B2CA;
-					};
 				};
 			};
 			buildConfigurationList = 9C8088A42FD0A8CD00B3B2CA /* Build configuration list for PBXProject "Gibbous" */;
@@ -207,6 +160,7 @@
 			packageReferences = (
 				D1B0FA1100000000000000C1 /* XCRemoteSwiftPackageReference "AstronomyKit" */,
 				D1B0FA1100000000000000C2 /* XCRemoteSwiftPackageReference "Swidux" */,
+				9C7924FF2FD436DB000D308B /* XCRemoteSwiftPackageReference "Persnicket" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9C8088AA2FD0A8CD00B3B2CA /* Products */;
@@ -215,7 +169,6 @@
 			targets = (
 				9C8088A82FD0A8CD00B3B2CA /* Gibbous */,
 				9C8088B52FD0A8CF00B3B2CA /* GibbousTests */,
-				9C8088BF2FD0A8CF00B3B2CA /* GibbousUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -229,13 +182,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		9C8088B42FD0A8CF00B3B2CA /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		9C8088BE2FD0A8CF00B3B2CA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -259,25 +205,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9C8088BC2FD0A8CF00B3B2CA /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		9C7925012FD436E8000D308B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 9C7925002FD436E8000D308B /* Persnoop */;
+		};
+		9C7925032FD436ED000D308B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 9C7925022FD436ED000D308B /* Persnoop */;
+		};
 		9C8088B82FD0A8CF00B3B2CA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9C8088A82FD0A8CD00B3B2CA /* Gibbous */;
 			targetProxy = 9C8088B72FD0A8CF00B3B2CA /* PBXContainerItemProxy */;
-		};
-		9C8088C22FD0A8CF00B3B2CA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 9C8088A82FD0A8CD00B3B2CA /* Gibbous */;
-			targetProxy = 9C8088C12FD0A8CF00B3B2CA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -510,44 +452,6 @@
 			};
 			name = Release;
 		};
-		9C8088D12FD0A8CF00B3B2CA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = K23JVP3VA8;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.heirloomlogic.GibbousUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
-				TEST_TARGET_NAME = Gibbous;
-			};
-			name = Debug;
-		};
-		9C8088D22FD0A8CF00B3B2CA /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = K23JVP3VA8;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.heirloomlogic.GibbousUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
-				TEST_TARGET_NAME = Gibbous;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -578,18 +482,17 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		9C8088D02FD0A8CF00B3B2CA /* Build configuration list for PBXNativeTarget "GibbousUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9C8088D12FD0A8CF00B3B2CA /* Debug */,
-				9C8088D22FD0A8CF00B3B2CA /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		9C7924FF2FD436DB000D308B /* XCRemoteSwiftPackageReference "Persnicket" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/heirloomlogic/Persnicket";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.1;
+			};
+		};
 		D1B0FA1100000000000000C1 /* XCRemoteSwiftPackageReference "AstronomyKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/heirloomlogic/AstronomyKit";
@@ -609,6 +512,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9C7925002FD436E8000D308B /* Persnoop */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C7924FF2FD436DB000D308B /* XCRemoteSwiftPackageReference "Persnicket" */;
+			productName = "plugin:Persnoop";
+		};
+		9C7925022FD436ED000D308B /* Persnoop */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C7924FF2FD436DB000D308B /* XCRemoteSwiftPackageReference "Persnicket" */;
+			productName = "plugin:Persnoop";
+		};
 		D1B0FA1100000000000000B1 /* AstronomyKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D1B0FA1100000000000000C1 /* XCRemoteSwiftPackageReference "AstronomyKit" */;

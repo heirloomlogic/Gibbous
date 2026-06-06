@@ -70,3 +70,27 @@ enum AboutWindow {
         newWindow.makeKeyAndOrderFront(nil)
     }
 }
+
+/// A single reusable Settings window. Owned directly (not a SwiftUI `Settings`
+/// scene) because the scene's `showSettingsWindow:` action does not surface for
+/// an `.accessory` menu-bar app. Mirrors `AboutWindow`.
+@MainActor
+enum SettingsWindow {
+    private static var window: NSWindow?
+
+    static func show(store: AppStore) {
+        NSApp.activate(ignoringOtherApps: true)
+        if let window {
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+        let hosting = NSHostingController(rootView: SettingsView().environment(store))
+        let newWindow = NSWindow(contentViewController: hosting)
+        newWindow.title = "Gibbous Settings"
+        newWindow.styleMask = [.titled, .closable]
+        newWindow.isReleasedWhenClosed = false
+        newWindow.center()
+        window = newWindow
+        newWindow.makeKeyAndOrderFront(nil)
+    }
+}

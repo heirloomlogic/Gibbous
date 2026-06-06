@@ -1,5 +1,5 @@
 {
-  "originHash" : "72ec5369240a39cba6e132349b19caa478b013e18677c60bff35e9eb0ef01484",
+  "originHash" : "571f1a48c9eef3c2293db940f7eee42dd5a1bb1a283331f4369df096d0f0ca24",
   "pins" : [
     {
       "identity" : "astronomykit",
@@ -7,13 +7,13 @@
       "location" : "https://github.com/heirloomlogic/AstronomyKit",
       "state" : {
         "branch" : "main",
-        "revision" : "b9467e2885fc7990095c0d4fa6010ee256eb42c3"
+        "revision" : "708494224a8d60d7f6ae73550ef6609674cb4784"
       }
     },
     {
       "identity" : "persnicket",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/HeirloomLogic/Persnicket",
+      "location" : "https://github.com/heirloomlogic/Persnicket",
       "state" : {
         "revision" : "19b01287705febe6e6ff150c764ad022dca8188e",
         "version" : "2.0.1"
@@ -25,7 +25,7 @@
       "location" : "https://github.com/heirloomlogic/Swidux",
       "state" : {
         "branch" : "main",
-        "revision" : "47dcc06b76d7e5710da875cd1f648b4606124e8e"
+        "revision" : "3a3feadbc6a0a08c47a49b52df09aacd9ac98da6"
       }
     },
     {

@@ -56,6 +56,6 @@ final class MoonDiscNSView: NSView {
 
     override func layout() {
         super.layout()
-        needsDisplay = true   // size may have changed → updateLayer re-checks
+        needsDisplay = true  // size may have changed → updateLayer re-checks
     }
 }

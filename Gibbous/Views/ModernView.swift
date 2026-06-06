@@ -77,7 +77,9 @@ private struct StatRow: View {
     var secondary: String?
 
     init(_ title: String, _ value: String, secondary: String? = nil) {
-        self.title = title; self.value = value; self.secondary = secondary
+        self.title = title
+        self.value = value
+        self.secondary = secondary
     }
 
     var body: some View {
@@ -110,6 +112,6 @@ struct ModernMoonOnlyView: View {
             }
         }
         .frame(width: 140, height: 140)
-        .background(ModernTheme.background.opacity(0.001))   // hit-testable, ~transparent
+        .background(ModernTheme.background.opacity(0.001))  // hit-testable, ~transparent
     }
 }

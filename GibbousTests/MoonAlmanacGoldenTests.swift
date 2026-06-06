@@ -10,12 +10,12 @@
 
 import Foundation
 import Testing
+
 @testable import Gibbous
 
 // `.serialized` so the suite is deterministic regardless of the runner's
 // parallelism (the underlying ephemeris C library is shared).
 @Suite(.serialized) struct MoonAlmanacGoldenTests {
-
     // Calibration note (verified 2026-06-03 against AstronomyKit @ main):
     // AstronomyKit is the modern, JPL-validated ephemeris and its output here
     // is internally self-consistent. The Moon Tool reference screenshot is the
@@ -33,14 +33,8 @@ import Testing
     // subtends all match the screenshot and corroborate the pipeline.
 
     /// 2014-10-05 21:58:18 UTC — the reference screenshot instant.
-    static let instant: Date = {
-        var c = DateComponents()
-        c.year = 2014; c.month = 10; c.day = 5
-        c.hour = 21; c.minute = 58; c.second = 18
-        c.timeZone = TimeZone(identifier: "UTC")
-        return Calendar(identifier: .gregorian).date(from: c)!
-    }()
-    static let nz = TimeZone(identifier: "Pacific/Auckland")!
+    static let instant = Date(timeIntervalSince1970: 1_412_546_298)
+    static let nz = TimeZone(identifier: "Pacific/Auckland") ?? .gmt
 
     func readout() throws -> MoonReadout {
         try MoonAlmanac.readout(at: Self.instant, timeZone: Self.nz)
@@ -96,8 +90,34 @@ import Testing
     @Test func fullMoonIsTheOctober8EclipseMoon() throws {
         let full = try readout().fullMoon
         var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(identifier: "UTC")!
+        cal.timeZone = .gmt
         let c = cal.dateComponents([.year, .month, .day], from: full)
         #expect(c.year == 2014 && c.month == 10 && c.day == 8)
+    }
+
+    // MARK: Lunation-event caching (the split is behavior-preserving)
+
+    @Test func lunationEventsMatchTheReadoutTimeline() throws {
+        let events = try MoonAlmanac.lunationEvents(containing: Self.instant)
+        let r = try readout()
+        #expect(events.lastNewMoon == r.lastNewMoon)
+        #expect(events.firstQuarter == r.firstQuarter)
+        #expect(events.fullMoon == r.fullMoon)
+        #expect(events.lastQuarter == r.lastQuarter)
+        #expect(events.nextNewMoon == r.nextNewMoon)
+        #expect(events.lunationNumber == r.lunationNumber)
+        // "now" is inside the lunation, so these events are reusable.
+        #expect(r.containsLunation(of: Self.instant))
+        #expect(r.lunationEvents == events)
+    }
+
+    @Test func readoutWithReusedEventsEqualsFreshReadout() throws {
+        // A later instant in the same lunation: reusing the cached events must
+        // produce the same readout as recomputing from scratch.
+        let later = Self.instant.addingTimeInterval(3_600)
+        let events = try MoonAlmanac.lunationEvents(containing: Self.instant)
+        let reused = try MoonAlmanac.readout(at: later, timeZone: Self.nz, events: events)
+        let fresh = try MoonAlmanac.readout(at: later, timeZone: Self.nz)
+        #expect(reused == fresh)
     }
 }

@@ -9,10 +9,10 @@
 //  when the phase, look or size changes).
 //
 
+import CoreGraphics
 import Foundation
 import Metal
 import MetalKit
-import CoreGraphics
 import simd
 
 /// Locates the module bundle (works in the app and in unit tests).
@@ -20,9 +20,9 @@ private final class GibbousBundleToken {}
 
 /// How the disc should be shaded.
 nonisolated enum MoonLook: Int32 {
-    case modern = 0          // photoreal colour
-    case blackAndWhite = 1   // desaturated
-    case retro = 2           // 1-bit ordered dither of the same shaded moon
+    case modern = 0  // photoreal colour
+    case blackAndWhite = 1  // desaturated
+    case retro = 2  // 1-bit ordered dither of the same shaded moon
 }
 
 /// Layout-compatible mirror of `MoonUniforms` in Moon.metal.
@@ -54,8 +54,8 @@ nonisolated struct MoonRenderRequest: Equatable {
     var transparentOutside: Bool = true
     var backgroundColor: SIMD4<Float> = SIMD4(0.07, 0.07, 0.09, 1)
     // Retro look tuning.
-    var ditherCell: Float = 1            // pixels per dither cell
-    var retroGamma: Float = 0.85         // tone curve before thresholding
+    var ditherCell: Float = 1  // pixels per dither cell
+    var retroGamma: Float = 0.85  // tone curve before thresholding
     var retroDark: SIMD4<Float> = SIMD4(0.02, 0.02, 0.03, 1)
     var retroLight: SIMD4<Float> = SIMD4(0.92, 0.93, 0.88, 1)
 }
@@ -97,17 +97,21 @@ nonisolated final class MoonRenderer {
         self.normal = try MoonRenderer.loadTexture("MoonNormal", loader: loader, bundle: bundle, srgb: false)
     }
 
-    private static func loadTexture(_ name: String, loader: MTKTextureLoader,
-                                    bundle: Bundle, srgb: Bool) throws -> MTLTexture {
+    private static func loadTexture(
+        _ name: String, loader: MTKTextureLoader,
+        bundle: Bundle, srgb: Bool
+    ) throws -> MTLTexture {
         guard let url = bundle.url(forResource: name, withExtension: "jpg") else {
             throw MoonRendererError.textureMissing(name)
         }
-        return try loader.newTexture(URL: url, options: [
-            .SRGB: srgb,
-            .generateMipmaps: true,
-            .textureUsage: MTLTextureUsage.shaderRead.rawValue,
-            .textureStorageMode: MTLStorageMode.private.rawValue,
-        ])
+        return try loader.newTexture(
+            URL: url,
+            options: [
+                .SRGB: srgb,
+                .generateMipmaps: true,
+                .textureUsage: MTLTextureUsage.shaderRead.rawValue,
+                .textureStorageMode: MTLStorageMode.private.rawValue,
+            ])
     }
 
     /// Render one moon to a `CGImage` of `pixelSize × pixelSize`.
@@ -127,7 +131,8 @@ nonisolated final class MoonRenderer {
         pass.colorAttachments[0].storeAction = .store
 
         guard let commandBuffer = queue.makeCommandBuffer(),
-              let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: pass) else {
+            let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: pass)
+        else {
             throw MoonRendererError.renderTargetFailed
         }
 
@@ -166,22 +171,31 @@ nonisolated final class MoonRenderer {
     }
 
     private func cgImage(from texture: MTLTexture) throws -> CGImage {
-        let width = texture.width, height = texture.height
+        let width = texture.width
+        let height = texture.height
         let bytesPerRow = width * 4
         var pixels = [UInt8](repeating: 0, count: bytesPerRow * height)
-        pixels.withUnsafeMutableBytes { raw in
-            texture.getBytes(raw.baseAddress!, bytesPerRow: bytesPerRow,
-                             from: MTLRegionMake2D(0, 0, width, height), mipmapLevel: 0)
+        let didRead = pixels.withUnsafeMutableBytes { raw -> Bool in
+            guard let base = raw.baseAddress else { return false }
+            texture.getBytes(
+                base, bytesPerRow: bytesPerRow,
+                from: MTLRegionMake2D(0, 0, width, height), mipmapLevel: 0)
+            return true
         }
+        guard didRead else { throw MoonRendererError.imageReadbackFailed }
 
-        let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) else {
+            throw MoonRendererError.imageReadbackFailed
+        }
         let info = CGImageAlphaInfo.premultipliedLast.rawValue
         guard let provider = CGDataProvider(data: Data(pixels) as CFData),
-              let image = CGImage(width: width, height: height, bitsPerComponent: 8,
-                                  bitsPerPixel: 32, bytesPerRow: bytesPerRow,
-                                  space: colorSpace, bitmapInfo: CGBitmapInfo(rawValue: info),
-                                  provider: provider, decode: nil, shouldInterpolate: true,
-                                  intent: .defaultIntent) else {
+            let image = CGImage(
+                width: width, height: height, bitsPerComponent: 8,
+                bitsPerPixel: 32, bytesPerRow: bytesPerRow,
+                space: colorSpace, bitmapInfo: CGBitmapInfo(rawValue: info),
+                provider: provider, decode: nil, shouldInterpolate: true,
+                intent: .defaultIntent)
+        else {
             throw MoonRendererError.imageReadbackFailed
         }
         return image
