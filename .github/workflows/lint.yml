@@ -1,0 +1,18 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  swift-format-lint:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Enable swift-format annotations
+        run: echo "::add-matcher::.github/swift-format-matcher.json"
+
+      - name: Lint (strict)
+        run: xcrun swift-format lint --strict --parallel --recursive --configuration .swift-format Gibbous GibbousTests

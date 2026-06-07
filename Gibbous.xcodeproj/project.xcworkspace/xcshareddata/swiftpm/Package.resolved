@@ -1,13 +1,13 @@
 {
-  "originHash" : "571f1a48c9eef3c2293db940f7eee42dd5a1bb1a283331f4369df096d0f0ca24",
+  "originHash" : "80336809c8f1ceccbbe92a66738e886297ad297796256de745c737103c90669d",
   "pins" : [
     {
       "identity" : "astronomykit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/heirloomlogic/AstronomyKit",
       "state" : {
-        "branch" : "main",
-        "revision" : "708494224a8d60d7f6ae73550ef6609674cb4784"
+        "revision" : "708494224a8d60d7f6ae73550ef6609674cb4784",
+        "version" : "1.0.0+upstream-2.1.19"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/heirloomlogic/Swidux",
       "state" : {
-        "branch" : "main",
-        "revision" : "3a3feadbc6a0a08c47a49b52df09aacd9ac98da6"
+        "revision" : "6c64f11f6ed90eacfc3b5a4408fa970093347d8e",
+        "version" : "1.2.0"
       }
     },
     {
