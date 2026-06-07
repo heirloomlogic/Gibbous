@@ -4,27 +4,26 @@
 
 # Gibbous
 
-**A tear-off moon companion for the Mac — and a working showcase of the Heirloom Logic stack.**
+**A menu-bar moon companion for the Mac — and a working showcase of the Heirloom Logic stack.**
 
 ![Swift 6.0](https://img.shields.io/badge/Swift-6.0-orange.svg)
 ![Platform macOS 26.5+](https://img.shields.io/badge/platform-macOS%2026.5%2B-lightgrey.svg)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 
-Gibbous lives in your menu bar and shows the Moon — its phase, age, illumination, distance, and the dates of the surrounding new, quarter, and full moons — recomputed live, every second. Tear it off into a floating desktop panel, flip between a modern 2026 dashboard and a System‑7 retro window, or shrink it down to just the disc as a quiet desktop pet.
+Gibbous lives in your menu bar and shows the Moon — its phase, age, illumination, distance, and the dates of the surrounding new, quarter, and full moons — recomputed live, every second. Click the status‑bar glyph for the companion, and flip between a modern 2026 dashboard and a System‑7 retro window.
 
 It is also three things at once:
 
-- **A real, usable Mac app.** Dual skins, a tear‑off floating panel, a Metal‑rendered Moon with real libration and limb darkening, and an optional full‑moon howl.
+- **A real, usable Mac app.** Dual skins, a Metal‑rendered Moon with real libration and limb darkening, and an optional full‑moon howl.
 - **A working demo of the Heirloom Logic open‑source stack** — [AstronomyKit](https://github.com/heirloomlogic/AstronomyKit) for the ephemeris, [Swidux](https://github.com/heirloomlogic/Swidux) for state, and [Persnicket](https://github.com/heirloomlogic/Persnicket) for lint/format. If you want to see these libraries used together in something that actually ships, this is the reference.
 - **An homage to *Moontool*** — John Walker's 1988 original and Richard Knuckey's Macintosh *Moon Tool*.
 
 ## Features
 
 - **Live menu‑bar glyph** — a tiny rendered Moon in the status item, updated on the clock.
+- **Click for the companion** — left‑click the glyph for a popdown with the full readout; right‑click for a menu to switch skins, toggle phase sounds, or quit.
 - **Two skins** — a modern dark dashboard, or a System‑7 retro window with the Chicago bitmap font and a 1‑bit dithered Moon.
-- **Two densities** — full stats readout, or moon‑only as a minimal desktop companion.
-- **Tear‑off floating panel** — detach from the menu bar into a movable, resizable desktop window, with an optional always‑on‑top mode. Position is remembered between launches.
 - **Metal‑rendered Moon** — a sphere‑impostor shader with phase terminator, limb darkening, libration tilt, and tangent‑space normal mapping for crater relief, from 8K albedo and normal maps.
 - **Full‑moon howl** — an optional sound as the clock crosses the full moon (off by default).
 - **Accurate ephemeris** — phase, libration, and phase‑event dates from AstronomyKit, validated against a golden master.
@@ -61,10 +60,9 @@ Gibbous is deliberately small, which makes it a clean read of the [Swidux](https
 ```swift
 @Swidux
 nonisolated struct AppState: Equatable, Sendable {
-    var displayStyle: DisplayStyle = .modern
-    var density: Density = .stats
-    var presentation: Presentation = .menuBarPopdown
-    var readout: MoonReadout? = nil
+    var displayStyle: DisplayStyle = .modern   // modern or retro
+    var soundsEnabled: Bool = false            // the full-moon howl
+    var readout: MoonReadout? = nil            // latest computed readout
 }
 ```
 
@@ -97,7 +95,7 @@ open Gibbous.xcodeproj
 
 Xcode resolves the Swift Package dependencies (AstronomyKit, Swidux, Persnicket) automatically on first open. Press **⌘R** to run.
 
-Gibbous launches as a menu‑bar accessory — there is no Dock icon and no main window. Look for the Moon glyph in the status bar; click it for the companion, and press **⌘,** for Settings.
+Gibbous launches as a menu‑bar accessory — there is no Dock icon and no main window. Look for the Moon glyph in the status bar; left‑click it for the companion, and right‑click for the menu to switch skins, toggle phase sounds, or quit.
 
 ## Tests
 
