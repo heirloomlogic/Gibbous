@@ -11,10 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup swift-format lint
-        run: |
-          swift package resolve
-          .build/checkouts/Persnicket/bin/ci-lint-setup
+      - name: Enable swift-format annotations
+        run: echo "::add-matcher::.github/swift-format-matcher.json"
 
       - name: Lint (strict)
         run: xcrun swift-format lint --strict --parallel --recursive --configuration .swift-format Gibbous GibbousTests
