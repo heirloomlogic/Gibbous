@@ -40,22 +40,6 @@ nonisolated struct AppReducer {
             state.displayStyle = value
             return persist(value, for: .displayStyle)
 
-        case .setDensity(let value):
-            state.density = value
-            return persist(value, for: .density)
-
-        case .setPresentation(let value):
-            state.presentation = value
-            return persist(value, for: .presentation)
-
-        case .setFloatingFrame(let frame):
-            state.floatingFrame = frame
-            return persist(frame, for: .floatingFrame)
-
-        case .setAlwaysOnTop(let value):
-            state.alwaysOnTop = value
-            return persist(value, for: .alwaysOnTop)
-
         case .setSoundsEnabled(let value):
             state.soundsEnabled = value
             return persist(value, for: .soundsEnabled)

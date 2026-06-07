@@ -16,7 +16,7 @@ struct About: View {
                 .foregroundStyle(.secondary)
             Text("Gibbous")
                 .font(.title2.weight(.semibold))
-            Text("A charming tear-off moon companion for the Mac.")
+            Text("A charming menu-bar moon companion for the Mac.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

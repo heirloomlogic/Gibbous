@@ -6,7 +6,6 @@
 //  preferences) lives in effects returned by the reducer, never here.
 //
 
-import CoreGraphics
 import Foundation
 
 nonisolated enum AppAction: Sendable {
@@ -20,10 +19,6 @@ nonisolated enum AppAction: Sendable {
     case readoutUnavailable
 
     case setDisplayStyle(DisplayStyle)
-    case setDensity(Density)
-    case setPresentation(Presentation)
-    case setFloatingFrame(CGRect)
-    case setAlwaysOnTop(Bool)
     case setSoundsEnabled(Bool)
 }
 

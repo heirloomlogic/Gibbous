@@ -49,8 +49,8 @@ nonisolated struct MoonRenderRequest: Equatable {
     var look: MoonLook = .modern
     var limbDarkening: Float = 0.35
     var ambient: Float = 0.015
-    /// Transparent outside the disc (menu-bar glyph, floating pet); otherwise
-    /// the background colour fills the frame (modern card).
+    /// Transparent outside the disc (menu-bar glyph); otherwise the background
+    /// colour fills the frame (modern card).
     var transparentOutside: Bool = true
     var backgroundColor: SIMD4<Float> = SIMD4(0.07, 0.07, 0.09, 1)
     // Retro look tuning.
