@@ -1,0 +1,66 @@
+Third-Party Software Notices
+============================
+
+Gibbous incorporates the following third-party packages and assets. Their
+licenses and notices are reproduced below.
+
+-------------------------------------------------------------------------------
+
+AstronomyKit, Swidux, Persnicket
+
+Heirloom Logic's open-source Swift packages, used for the ephemeris, state
+management, and lint/format tooling respectively.
+
+  https://github.com/heirloomlogic/AstronomyKit
+  https://github.com/heirloomlogic/Swidux
+  https://github.com/heirloomlogic/Persnicket
+
+MIT License
+
+Copyright (c) 2025-2026 Heirloom Logic LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-------------------------------------------------------------------------------
+
+ChicagoFLF font (Gibbous/Resources/Fonts/ChicagoFLF.ttf)
+
+ChicagoFLF, used to render the System-7 retro skin, is a TrueType revival of
+Susan Kare's Chicago typeface (the Macintosh interface font, 1984-1997). It was
+created by Robin Casady and released into the public domain, free for personal
+and commercial use.
+
+  https://fontlibrary.org/en/font/chicagoflf
+
+-------------------------------------------------------------------------------
+
+Lunar texture maps (Gibbous/Resources/Textures/Moon.jpg, MoonNormal.jpg)
+
+The lunar albedo map (Moon.jpg) used by the Metal-rendered Moon is from NASA's
+CGI Moon Kit, assembled from data collected by the Lunar Reconnaissance Orbiter
+camera and laser altimeter instrument teams.
+
+  https://svs.gsfc.nasa.gov/4720/
+
+  Credit: NASA's Scientific Visualization Studio
+
+The normal map (MoonNormal.jpg) is derived from the CGI Moon Kit elevation
+(displacement) map using the Normal Map Creator tool.
+
+  https://xo3d.co.uk/tools/normal-map-creator/
