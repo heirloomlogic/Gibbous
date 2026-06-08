@@ -2,32 +2,26 @@
 //  ModernView.swift
 //  Gibbous
 //
-//  The 2026 skin: a clean dark dashboard with a hero moon and monospaced-digit
-//  readouts.
+//  The 2026 skin: a clean dashboard with a hero moon and monospaced-digit
+//  readouts. Surfaces are Liquid Glass over the popover's own glass, so the
+//  look follows the system light/dark appearance instead of a fixed palette.
 //
 
 import SwiftUI
-
-private enum ModernTheme {
-    static let background = Color(red: 0.055, green: 0.055, blue: 0.07)
-    static let card = Color(red: 0.10, green: 0.10, blue: 0.12)
-    static let primary = Color(white: 0.96)
-    static let secondary = Color(white: 0.62)
-    static let hairline = Color(white: 1, opacity: 0.06)
-}
 
 struct ModernView: View {
     @Environment(AppStore.self) private var store
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-            Divider().overlay(ModernTheme.hairline)
-            stats
+        GlassStack(spacing: 12) {
+            VStack(spacing: 12) {
+                header
+                stats
+            }
+            .padding(12)
         }
         .frame(width: 300)
-        .background(ModernTheme.background)
-        .foregroundStyle(ModernTheme.primary)
+        .foregroundStyle(.primary)
     }
 
     @ViewBuilder private var header: some View {
@@ -35,10 +29,11 @@ struct ModernView: View {
             HStack(spacing: 16) {
                 MoonDiscView(request: MoonRenderRequest(readout: readout, style: .modern))
                     .frame(width: 96, height: 96)
+                    .glassSurface(in: .circle)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(readout.phaseName).font(.headline)
                     Text("\(readout.illuminationText) lit")
-                        .font(.subheadline).foregroundStyle(ModernTheme.secondary)
+                        .font(.subheadline).foregroundStyle(.secondary)
                     Text(readout.localTimeText)
                         .font(.system(.title3, design: .rounded).monospacedDigit())
                         .padding(.top, 2)
@@ -46,8 +41,11 @@ struct ModernView: View {
                 Spacer()
             }
             .padding(16)
+            .glassSurface(in: .rect(cornerRadius: 16))
         } else {
-            MoonUnavailableView().frame(maxWidth: .infinity, minHeight: 128)
+            MoonUnavailableView()
+                .frame(maxWidth: .infinity, minHeight: 128)
+                .glassSurface(in: .rect(cornerRadius: 16))
         }
     }
 
@@ -64,6 +62,7 @@ struct ModernView: View {
                 StatRow("Date", r.localDateText)
             }
             .padding(.vertical, 6)
+            .glassSurface(in: .rect(cornerRadius: 16))
         }
     }
 }
@@ -81,12 +80,12 @@ private struct StatRow: View {
 
     var body: some View {
         HStack {
-            Text(title).font(.callout).foregroundStyle(ModernTheme.secondary)
+            Text(title).font(.callout).foregroundStyle(.secondary)
             Spacer()
             HStack(spacing: 6) {
                 Text(value)
                 if let secondary {
-                    Text(secondary).foregroundStyle(ModernTheme.secondary)
+                    Text(secondary).foregroundStyle(.secondary)
                 }
             }
             .font(.system(.callout, design: .rounded).monospacedDigit())

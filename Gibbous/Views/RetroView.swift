@@ -6,16 +6,32 @@
 //  Chicago (ChicagoFLF) bitmap face, and the 1-bit dithered moon. A homage to
 //  Moon Tool's layout, redrawn from our own ephemeris and our own disc.
 //
+//  The bevel palette is resolved from the system appearance: classic light-gray
+//  System 7 in light mode, and an inverted "dark System 7" in dark mode. The
+//  window has no fixed background — the group boxes float on the popover's
+//  Liquid Glass.
+//
 
 import SwiftUI
 
-enum RetroTheme {
-    static let window = Color(white: 0.86)
-    static let ink = Color.black
-    static let sky = Color.black
-    static let highlight = Color.white
-    static let shadow = Color(white: 0.5)
+/// System-7 frame palette, resolved per appearance: `ink` is the engraved rule
+/// and the text colour, `highlight` the faint inner bevel. Light mode is the
+/// classic black-on-gray look; dark mode inverts to light ink on the dark glass.
+struct RetroPalette {
+    let ink: Color
+    let highlight: Color
 
+    static func resolve(_ scheme: ColorScheme) -> RetroPalette {
+        switch scheme {
+        case .dark:
+            return RetroPalette(ink: Color(white: 0.92), highlight: Color(white: 0.30))
+        default:
+            return RetroPalette(ink: .black, highlight: .white)
+        }
+    }
+}
+
+enum RetroTheme {
     /// Chicago-style face — Robin Casady's public-domain ChicagoFLF, a revival
     /// of Susan Kare's System-7 Chicago. Bundled in Resources/Fonts and
     /// registered at launch; falls back to the system font if unavailable.
@@ -24,6 +40,9 @@ enum RetroTheme {
 
 struct RetroView: View {
     @Environment(AppStore.self) private var store
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var palette: RetroPalette { RetroPalette.resolve(colorScheme) }
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -64,15 +83,15 @@ struct RetroView: View {
             }
         }
         .padding(14)
-        .background(RetroTheme.window)
-        .foregroundStyle(RetroTheme.ink)
+        .foregroundStyle(palette.ink)
     }
 
     private var moonDisc: some View {
         Group {
             if let readout = store.readout {
+                // Transparent outside the disc, so the popover's glass shows
+                // through behind the dithered moon.
                 MoonDiscView(request: MoonRenderRequest(readout: readout, style: .retro, ditherCell: 1))
-                    .background(RetroTheme.sky)
             } else {
                 MoonUnavailableView()
             }
@@ -90,33 +109,34 @@ struct RetroView: View {
     }
 }
 
-/// A titled System-7 bevel frame: black outer rule with a white/gray inner
-/// bevel, and the title notched into the top edge.
+/// A titled System-7 section: a bold Chicago label above an unfilled beveled
+/// frame. There is no fill — the popover's own Liquid Glass shows through the
+/// frame and behind the content; only the 1px engraved rule and a faint inner
+/// highlight (resolved per appearance) draw the System-7 outline.
 struct RetroGroupBox<Content: View>: View {
     let title: String
     @ViewBuilder var content: Content
 
+    @Environment(\.colorScheme) private var colorScheme
+    private var palette: RetroPalette { RetroPalette.resolve(colorScheme) }
+
     var body: some View {
-        content
-            .padding(.horizontal, 12)
-            .padding(.top, 18)
-            .padding(.bottom, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                ZStack {
-                    Rectangle().fill(RetroTheme.window)
-                    Rectangle().stroke(RetroTheme.highlight, lineWidth: 1).offset(x: 1, y: 1)
-                    Rectangle().stroke(RetroTheme.shadow, lineWidth: 1).offset(x: -1, y: -1)
-                    Rectangle().stroke(RetroTheme.ink, lineWidth: 1)
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title)
+                .font(RetroTheme.font(11))
+                .foregroundStyle(palette.ink)
+                .padding(.leading, 2)
+            content
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .overlay {
+                    ZStack {
+                        Rectangle().strokeBorder(palette.highlight.opacity(0.5), lineWidth: 1)
+                            .padding(1)
+                        Rectangle().strokeBorder(palette.ink, lineWidth: 1)
+                    }
                 }
-            )
-            .overlay(alignment: .topLeading) {
-                Text(title)
-                    .font(RetroTheme.font(11))
-                    .padding(.horizontal, 4)
-                    .background(RetroTheme.window)
-                    .offset(x: 12, y: -7)
-            }
-            .padding(.top, 9)  // room above the frame for the notched title
+        }
     }
 }

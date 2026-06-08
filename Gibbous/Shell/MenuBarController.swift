@@ -64,6 +64,11 @@ final class MenuBarController: NSObject {
             popover.performClose(nil)
         } else if let button = statusItem.button {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            // Activate so the popover window becomes key: this makes its content
+            // render in the system appearance immediately (not the default light
+            // one) and lets the transient behavior dismiss on an outside click.
+            NSApp.activate()
+            popover.contentViewController?.view.window?.makeKey()
         }
     }
 

@@ -24,6 +24,35 @@ struct CompanionView: View {
     }
 }
 
+// MARK: - Liquid Glass support
+
+/// Wraps content in a `GlassEffectContainer` on macOS 26+, and passes the
+/// content through unchanged on earlier systems where the API is unavailable.
+struct GlassStack<Content: View>: View {
+    var spacing: CGFloat
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        if #available(macOS 26, *) {
+            GlassEffectContainer(spacing: spacing) { content }
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    /// A Liquid Glass surface on macOS 26+, falling back to an ultra-thin
+    /// material (over the popover's own material) on earlier systems.
+    @ViewBuilder func glassSurface(in shape: some Shape) -> some View {
+        if #available(macOS 26, *) {
+            glassEffect(in: shape)
+        } else {
+            background(.ultraThinMaterial, in: shape)
+        }
+    }
+}
+
 // MARK: - Unavailable / loading
 
 /// Shown in place of the disc when ephemeris is unavailable.
