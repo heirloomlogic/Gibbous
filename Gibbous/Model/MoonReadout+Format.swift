@@ -50,8 +50,10 @@ nonisolated extension MoonReadout {
     var illuminationText: String { String(format: "%.1f%%", illuminatedFraction * 100) }
     var moonAgeText: String { "\(moonAge.days)d \(moonAge.hours)h \(moonAge.minutes)m" }
 
-    var moonDistanceText: String {
-        "\(moonDistanceKM.formatted(.number.precision(.fractionLength(0)))) km"
+    var moonDistanceText: String { distanceKMText(moonDistanceKM) }
+    var sunDistanceText: String { distanceKMText(sunDistanceKM) }
+    private func distanceKMText(_ km: Double) -> String {
+        "\(km.formatted(.number.precision(.fractionLength(0)))) km"
     }
     var moonDistanceEarthRadiiText: String { String(format: "%.1f ER", moonDistanceEarthRadii) }
     var sunDistanceAUText: String { String(format: "%.3f AU", sunDistanceAU) }

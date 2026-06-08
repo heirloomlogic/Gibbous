@@ -21,6 +21,9 @@ struct RetroPalette {
     let ink: Color
     let highlight: Color
 
+    /// Dimmed ink for ledger labels and secondary readouts.
+    var muted: Color { ink.opacity(0.55) }
+
     static func resolve(_ scheme: ColorScheme) -> RetroPalette {
         switch scheme {
         case .dark:
@@ -44,15 +47,39 @@ struct RetroView: View {
 
     private var palette: RetroPalette { RetroPalette.resolve(colorScheme) }
 
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            RetroGroupBox(title: "Moon") {
-                moonDisc.frame(width: 150, height: 150)
-            }
-            .frame(width: 178)
+    /// Widths for the hero-left / ledger-right composition. The moon disc anchors
+    /// the left column and sets its height; the right column stacks the data boxes
+    /// to roughly match it, and the Time-and-Date footer spans both.
+    private enum Layout {
+        static let gap: CGFloat = 12
+        static let disc: CGFloat = 208
+        static let heroBox: CGFloat = disc + 24  // disc + 12pt content padding each side
+        static let rightCol: CGFloat = 332
 
+        static let total: CGFloat = heroBox + gap + rightCol
+        /// A half of the right column, for the paired Age | Subtend boxes.
+        static let halfRight: CGFloat = (rightCol - gap) / 2
+    }
+
+    var body: some View {
+        Group {
             if let r = store.readout {
-                VStack(spacing: 12) {
+                layout(r)
+            } else {
+                hero(nil)
+            }
+        }
+        .padding(14)
+        .foregroundStyle(palette.ink)
+    }
+
+    /// Hero moon on the left; a ledger of data boxes on the right; a full-width
+    /// Time-and-Date footer beneath both.
+    private func layout(_ r: MoonReadout) -> some View {
+        VStack(alignment: .leading, spacing: Layout.gap) {
+            HStack(alignment: .top, spacing: Layout.gap) {
+                hero(r)
+                VStack(spacing: Layout.gap) {
                     RetroGroupBox(title: "Phases of the Moon") {
                         VStack(alignment: .leading, spacing: 4) {
                             ForEach(r.phaseEvents) { event in
@@ -60,49 +87,102 @@ struct RetroView: View {
                             }
                         }
                     }
-                    RetroGroupBox(title: "Moon Age") {
-                        VStack(alignment: .leading, spacing: 4) {
-                            retroLine("Age", r.moonAgeText)
-                            retroLine("Lunation", r.lunationText)
-                            retroLine("Julian", r.julianDateText)
+                    HStack(alignment: .top, spacing: Layout.gap) {
+                        RetroGroupBox(title: "Moon Age") {
+                            VStack(alignment: .leading, spacing: 4) {
+                                retroLine("Age", r.moonAgeText)
+                                retroLine("Lunation", r.lunationText)
+                            }
                         }
-                    }
-                    RetroGroupBox(title: "Distance & Subtend") {
-                        VStack(alignment: .leading, spacing: 4) {
-                            retroLine("Moon", r.moonDistanceEarthRadiiText)
-                            retroLine("Sun", r.sunDistanceAUText)
-                            retroLine("Moon ∅", r.moonSubtendText)
-                            retroLine("Sun ∅", r.sunSubtendText)
+                        .frame(width: Layout.halfRight)
+                        RetroGroupBox(title: "Subtend") {
+                            VStack(alignment: .leading, spacing: 4) {
+                                retroLine("Moon ∅", r.moonSubtendText)
+                                retroLine("Sun ∅", r.sunSubtendText)
+                            }
                         }
+                        .frame(width: Layout.halfRight)
                     }
-                    RetroGroupBox(title: "Time and Date") {
-                        retroLine(r.localDateText, r.localTimeText)
+                    RetroGroupBox(title: "Distance") {
+                        Grid(alignment: .trailing, horizontalSpacing: 12, verticalSpacing: 4) {
+                            distanceRow("Moon", r.moonDistanceText, r.moonDistanceEarthRadiiText)
+                            distanceRow("Sun", r.sunDistanceText, r.sunDistanceAUText)
+                        }
                     }
                 }
-                .frame(width: 320)
+                .frame(width: Layout.rightCol)
             }
+            RetroGroupBox(title: "Time and Date") {
+                HStack(spacing: 8) {
+                    Text(r.localDateText)
+                    Spacer(minLength: 8)
+                    Text("JD \(r.julianDateText)").foregroundStyle(palette.muted)
+                    Spacer(minLength: 8)
+                    Text(r.localTimeText)
+                }
+                .font(RetroTheme.font(11))
+                .lineLimit(1)
+            }
+            .frame(width: Layout.total)
         }
-        .padding(14)
-        .foregroundStyle(palette.ink)
     }
 
-    private var moonDisc: some View {
+    /// The hero: the dithered disc with the current phase name and illumination
+    /// beneath it — the readout's headline, which the disc alone can't spell out.
+    private func hero(_ r: MoonReadout?) -> some View {
+        RetroGroupBox(title: "Moon", fill: true) {
+            VStack(spacing: 8) {
+                moonDisc(r).frame(width: Layout.disc, height: Layout.disc)
+                if let r {
+                    VStack(spacing: 2) {
+                        Text(r.phaseName)
+                            .font(RetroTheme.font(14))
+                        Text("\(r.illuminationText) illuminated")
+                            .font(RetroTheme.font(11))
+                            .foregroundStyle(palette.muted)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .frame(width: Layout.heroBox)
+        .frame(maxHeight: .infinity)
+    }
+
+    private func moonDisc(_ r: MoonReadout?) -> some View {
         Group {
-            if let readout = store.readout {
+            if let r {
                 // Transparent outside the disc, so the popover's glass shows
                 // through behind the dithered moon.
-                MoonDiscView(request: MoonRenderRequest(readout: readout, style: .retro, ditherCell: 1))
+                MoonDiscView(request: MoonRenderRequest(readout: r, style: .retro, ditherCell: 1))
             } else {
                 MoonUnavailableView()
             }
         }
     }
 
+    /// A ledger line: a dimmed label on the left, the value spread to the box's
+    /// right edge. Distance uses `distanceRow` for its aligned unit columns.
     private func retroLine(_ label: String, _ value: String) -> some View {
         HStack(spacing: 8) {
-            Text(label)
+            Text(label).foregroundStyle(palette.ink.opacity(0.55))
             Spacer(minLength: 8)
             Text(value)
+        }
+        .font(RetroTheme.font(11))
+        .lineLimit(1)
+    }
+
+    /// A Distance row in the two-unit layout: a dimmed label on the left, then the
+    /// km value and the secondary unit (ER / AU) right-aligned into shared columns,
+    /// the way Moon Tool tabulates distance.
+    private func distanceRow(_ label: String, _ primary: String, _ secondary: String) -> some View {
+        GridRow {
+            Text(label)
+                .foregroundStyle(palette.ink.opacity(0.55))
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(primary)
+            Text(secondary)
         }
         .font(RetroTheme.font(11))
         .lineLimit(1)
@@ -115,6 +195,10 @@ struct RetroView: View {
 /// highlight (resolved per appearance) draw the System-7 outline.
 struct RetroGroupBox<Content: View>: View {
     let title: String
+    /// When true, the framed area stretches to fill the available height (its
+    /// content stays top-anchored). Used by the hero so its frame bottom lines
+    /// up with the taller data column beside it.
+    var fill: Bool = false
     @ViewBuilder var content: Content
 
     @Environment(\.colorScheme) private var colorScheme
@@ -129,7 +213,7 @@ struct RetroGroupBox<Content: View>: View {
             content
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, maxHeight: fill ? .infinity : nil, alignment: .topLeading)
                 .overlay {
                     ZStack {
                         Rectangle().strokeBorder(palette.highlight.opacity(0.5), lineWidth: 1)
