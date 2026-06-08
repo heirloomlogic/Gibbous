@@ -114,6 +114,17 @@ A homage to *Moontool* by John Walker (1988) and the Macintosh *Moon Tool* by Ri
 - [Moontool for Unix/Windows](https://www.fourmilab.ch/moontool/) — John Walker, Fourmilab
 - [Moon Tool 1.0.1 for Macintosh](https://www.macintoshrepository.org/150-moon-tool-1-0-1) — Macintosh Repository
 
+## From Heirloom Logic
+
+Gibbous is free, and it's a front door. The same engine and craft go into
+[Heirloom Logic](https://github.com/heirloomlogic)'s apps — two of them are the
+Moon you're watching here, taken further:
+
+- **Fallow** — a celestial almanac for lunar practice: rest and observance, kept by the same Moon.
+- **Edict** — an observatory for timing what matters, read from the same sky.
+
+Both are built on AstronomyKit, like Gibbous. Coming from Heirloom Logic.
+
 ## Built with
 
 - [AstronomyKit](https://github.com/heirloomlogic/AstronomyKit) — Sun, Moon, planet, and star positions in Swift
