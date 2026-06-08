@@ -32,17 +32,14 @@ nonisolated struct AppEnvironment: Sendable {
                 return try MoonAlmanac.readout(at: date, timeZone: timeZone, events: events)
             },
             playHowl: {
-                // Bundled, licensed audio only. No-ops until a howl file is
-                // added to Resources/Sounds (see the build checklist).
+                // Plays the bundled, licensed howl from Resources/Sounds.
+                // Gracefully no-ops if the asset can't be found or decoded.
                 Task { @MainActor in
-                    let bundle = Bundle.main
-                    let url =
-                        bundle.url(forResource: "howl", withExtension: "wav")
-                        ?? bundle.url(forResource: "howl", withExtension: "aiff")
-                        ?? bundle.url(forResource: "howl", withExtension: "m4a")
-                    if let url, let sound = NSSound(contentsOf: url, byReference: true) {
-                        sound.play()
-                    }
+                    guard
+                        let url = Bundle.main.url(forResource: "howl", withExtension: "m4a"),
+                        let sound = NSSound(contentsOf: url, byReference: true)
+                    else { return }
+                    sound.play()
                 }
             }
         )
