@@ -21,6 +21,8 @@ nonisolated struct AppEnvironment: Sendable {
     var computeReadout: @Sendable (Date, TimeZone, LunationEvents?) throws -> MoonReadout
     /// Fire the flagship full-moon cue. Wired by the shell; no-op until then.
     var playHowl: @Sendable () -> Void
+    /// Fire the new-moon cue. Wired by the shell; no-op until then.
+    var playHoot: @Sendable () -> Void
 
     static func live() -> AppEnvironment {
         AppEnvironment(
@@ -31,17 +33,22 @@ nonisolated struct AppEnvironment: Sendable {
                 let events = try reuse ?? MoonAlmanac.lunationEvents(containing: date)
                 return try MoonAlmanac.readout(at: date, timeZone: timeZone, events: events)
             },
-            playHowl: {
-                // Plays the bundled, licensed howl from Resources/Sounds.
-                // Gracefully no-ops if the asset can't be found or decoded.
-                Task { @MainActor in
-                    guard
-                        let url = Bundle.main.url(forResource: "howl", withExtension: "m4a"),
-                        let sound = NSSound(contentsOf: url, byReference: true)
-                    else { return }
-                    sound.play()
-                }
-            }
+            playHowl: playSound(named: "howl"),
+            playHoot: playSound(named: "hoot")
         )
+    }
+
+    /// A cue that plays a bundled, licensed sound from Resources/Sounds.
+    /// Gracefully no-ops if the asset can't be found or decoded.
+    private static func playSound(named name: String) -> @Sendable () -> Void {
+        {
+            Task { @MainActor in
+                guard
+                    let url = Bundle.main.url(forResource: name, withExtension: "m4a"),
+                    let sound = NSSound(contentsOf: url, byReference: true)
+                else { return }
+                sound.play()
+            }
+        }
     }
 }

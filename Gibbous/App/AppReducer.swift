@@ -30,7 +30,11 @@ nonisolated struct AppReducer {
         case .readoutUpdated(let readout):
             state.readout = readout
             state.isUnavailable = false
-            return fullMoonHowl(state: &state, readout: readout)
+            // Run both phase cues for their arming side effects; at most one can
+            // fire on a single readout (full and new moons are ~14.75 days apart).
+            let howl = fullMoonHowl(state: &state, readout: readout)
+            let hoot = newMoonHoot(state: &state, readout: readout)
+            return howl ?? hoot
 
         case .readoutUnavailable:
             state.isUnavailable = true
@@ -87,6 +91,23 @@ nonisolated struct AppReducer {
         state.lastFiredFullMoon = full
         guard state.soundsEnabled else { return nil }
         let play = environment.playHowl
+        return { _ in play() }
+    }
+
+    /// The new-moon counterpart to the howl. The new moon bounds the lunation,
+    /// so unlike the full moon its date rolls forward at the crossing — we
+    /// detect the crossing by watching the most-recent new moon advance, seeding
+    /// on the first readout so a new moon already past at launch never fires.
+    private func newMoonHoot(state: inout AppState, readout: MoonReadout) -> AppEffect? {
+        let last = readout.lastNewMoon
+        guard let seen = state.seenNewMoon else {
+            state.seenNewMoon = last  // first readout: adopt the current new moon as already-seen
+            return nil
+        }
+        guard last != seen else { return nil }  // same lunation, nothing crossed
+        state.seenNewMoon = last  // the new moon advanced → we crossed it live
+        guard state.soundsEnabled else { return nil }
+        let play = environment.playHoot
         return { _ in play() }
     }
 
