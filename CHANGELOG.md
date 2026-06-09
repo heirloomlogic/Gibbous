@@ -13,6 +13,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Two densities: full stats readout and moon-only.
 - Tear-off floating panel with optional always-on-top mode and remembered position.
 - Metal-rendered Moon: sphere-impostor shader with phase terminator, limb darkening, libration tilt, and tangent-space normal mapping from 8K albedo and normal maps.
-- Optional full-moon charm cue (off by default).
+- Optional phase charm cues, off by default: a wolf howl as the clock crosses the full moon and an owl hoot as it crosses the new moon.
 - Accurate ephemeris — phase, libration, and phase-event dates from [AstronomyKit](https://github.com/heirloomlogic/AstronomyKit), validated against a golden master.
 - State management via [Swidux](https://github.com/heirloomlogic/Swidux); lint/format via [Persnicket](https://github.com/heirloomlogic/Persnicket).

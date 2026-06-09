@@ -16,14 +16,18 @@ struct AppReducerTests {
     struct StubUnavailable: Error {}
     let kv = InMemoryKeyValueStore()
 
-    func makeReducer(playHowl: @escaping @Sendable () -> Void = {}) -> AppReducer {
+    func makeReducer(
+        playHowl: @escaping @Sendable () -> Void = {},
+        playHoot: @escaping @Sendable () -> Void = {}
+    ) -> AppReducer {
         AppReducer(
             environment: AppEnvironment(
                 keyValue: kv,
                 timeZone: TimeZone.gmt,
                 now: { Date(timeIntervalSinceReferenceDate: 0) },
                 computeReadout: { _, _, _ in throw StubUnavailable() },
-                playHowl: playHowl
+                playHowl: playHowl,
+                playHoot: playHoot
             ))
     }
 
@@ -71,7 +75,8 @@ struct AppReducerTests {
                     spy.calls.append(reuse)
                     return seed
                 },
-                playHowl: {}
+                playHowl: {},
+                playHoot: {}
             ))
     }
 
@@ -134,7 +139,8 @@ struct AppReducerTests {
 
     // MARK: Charm — full-moon howl
 
-    final class HowlSpy: @unchecked Sendable { var count = 0 }
+    /// Counts how many times a charm cue (`playHowl`/`playHoot`) fired.
+    final class CharmCueSpy: @unchecked Sendable { var count = 0 }
 
     func fullMoonReadout(now: Date, full: Date) -> MoonReadout {
         MoonReadout(
@@ -149,7 +155,7 @@ struct AppReducerTests {
     }
 
     @Test func howlsOnceOnLiveFullMoonCrossingWhenEnabled() async {
-        let spy = HowlSpy()
+        let spy = CharmCueSpy()
         let reducer = makeReducer(playHowl: { spy.count += 1 })
         var state = AppState()
         state.soundsEnabled = true
@@ -170,7 +176,7 @@ struct AppReducerTests {
     }
 
     @Test func doesNotHowlWhenSoundsDisabled() async {
-        let spy = HowlSpy()
+        let spy = CharmCueSpy()
         let reducer = makeReducer(playHowl: { spy.count += 1 })
         var state = AppState()
         state.soundsEnabled = false
@@ -185,7 +191,7 @@ struct AppReducerTests {
     }
 
     @Test func doesNotHowlForAFullMoonAlreadyPastAtLaunch() async {
-        let spy = HowlSpy()
+        let spy = CharmCueSpy()
         let reducer = makeReducer(playHowl: { spy.count += 1 })
         var state = AppState()
         state.soundsEnabled = true
@@ -194,6 +200,74 @@ struct AppReducerTests {
         await run(
             reducer.reduce(
                 state: &state, action: .readoutUpdated(fullMoonReadout(now: full.addingTimeInterval(60), full: full))))
+        #expect(spy.count == 0)
+    }
+
+    // MARK: Charm — new-moon hoot
+
+    func newMoonReadout(now: Date, lastNew: Date) -> MoonReadout {
+        MoonReadout(
+            now: now, timeZone: TimeZone.gmt,
+            phaseAngleDegrees: 0, illuminatedFraction: 0, isWaxing: true, phaseName: "New Moon",
+            julianDate: 0, moonDistanceKM: 0, moonDistanceEarthRadii: 0,
+            sunDistanceAU: 0, sunDistanceKM: 0, moonSubtendDegrees: 0, sunSubtendDegrees: 0,
+            lunationNumber: 0, moonAge: MoonAge(days: 0, hours: 0, minutes: 0),
+            lastNewMoon: lastNew, firstQuarter: now, fullMoon: now,
+            lastQuarter: now, nextNewMoon: lastNew.addingTimeInterval(29.5 * 86_400),
+            subEarthLatitude: 0, subEarthLongitude: 0)
+    }
+
+    @Test func hootsOnceOnLiveNewMoonCrossingWhenEnabled() async {
+        let spy = CharmCueSpy()
+        let reducer = makeReducer(playHoot: { spy.count += 1 })
+        var state = AppState()
+        state.soundsEnabled = true
+        let n0 = Date(timeIntervalSinceReferenceDate: 0)
+        let n1 = n0.addingTimeInterval(29.5 * 86_400)
+
+        // First readout seeds the current new moon as already-seen.
+        await run(
+            reducer.reduce(
+                state: &state, action: .readoutUpdated(newMoonReadout(now: n0.addingTimeInterval(60), lastNew: n0))))
+        #expect(spy.count == 0)  // seeded, nothing crossed
+        // The lunation rolls over: lastNewMoon advances → crossed → hoot.
+        await run(
+            reducer.reduce(
+                state: &state, action: .readoutUpdated(newMoonReadout(now: n1.addingTimeInterval(1), lastNew: n1))))
+        #expect(spy.count == 1)  // crossed → hoot
+        // Still in the new lunation → no re-fire.
+        await run(
+            reducer.reduce(
+                state: &state, action: .readoutUpdated(newMoonReadout(now: n1.addingTimeInterval(2), lastNew: n1))))
+        #expect(spy.count == 1)  // debounced, no re-fire
+    }
+
+    @Test func doesNotHootWhenSoundsDisabled() async {
+        let spy = CharmCueSpy()
+        let reducer = makeReducer(playHoot: { spy.count += 1 })
+        var state = AppState()
+        state.soundsEnabled = false
+        let n0 = Date(timeIntervalSinceReferenceDate: 0)
+        let n1 = n0.addingTimeInterval(29.5 * 86_400)
+        await run(
+            reducer.reduce(
+                state: &state, action: .readoutUpdated(newMoonReadout(now: n0.addingTimeInterval(60), lastNew: n0))))
+        await run(
+            reducer.reduce(
+                state: &state, action: .readoutUpdated(newMoonReadout(now: n1.addingTimeInterval(1), lastNew: n1))))
+        #expect(spy.count == 0)
+    }
+
+    @Test func doesNotHootForANewMoonAlreadyPastAtLaunch() async {
+        let spy = CharmCueSpy()
+        let reducer = makeReducer(playHoot: { spy.count += 1 })
+        var state = AppState()
+        state.soundsEnabled = true
+        let n0 = Date(timeIntervalSinceReferenceDate: 0)
+        // First-ever readout seeds seenNewMoon → the new moon past at launch never hoots.
+        await run(
+            reducer.reduce(
+                state: &state, action: .readoutUpdated(newMoonReadout(now: n0.addingTimeInterval(60), lastNew: n0))))
         #expect(spy.count == 0)
     }
 }

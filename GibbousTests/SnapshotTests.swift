@@ -17,10 +17,13 @@ struct SnapshotTests {
         RetroFont.registerBundledFonts()
 
         let env = AppEnvironment(
-            keyValue: InMemoryKeyValueStore(), timeZone: .current,
+            keyValue: InMemoryKeyValueStore(),
+            timeZone: .current,
             now: { Date() },
             computeReadout: { date, tz, _ in try MoonAlmanac.readout(at: date, timeZone: tz) },
-            playHowl: {})
+            playHowl: {},
+            playHoot: {}
+        )
         let store = AppStore.configured(environment: env)
         store.send(.readoutUpdated(try MoonAlmanac.readout(at: Date(), timeZone: .current)))
 

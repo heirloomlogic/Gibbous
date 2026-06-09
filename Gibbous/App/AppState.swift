@@ -32,6 +32,10 @@ nonisolated struct AppState: Equatable, Sendable {
     var armedFullMoon: Date? = nil
     /// The full moon we last fired the howl for, to debounce the charm cue.
     var lastFiredFullMoon: Date? = nil
+    /// The most recent new moon we've already accounted for this session —
+    /// seeded on the first readout so a new moon past at launch never hoots,
+    /// then advanced (and fired) each time the clock crosses into a new lunation.
+    var seenNewMoon: Date? = nil
 }
 
 // MARK: - Persisted preference keys
