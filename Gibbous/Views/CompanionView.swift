@@ -12,14 +12,37 @@ struct CompanionView: View {
     @Environment(AppStore.self) private var store
 
     var body: some View {
-        content
-            .animation(.smooth(duration: 0.25), value: store.displayStyle)
+        CardFlip(flipped: store.isShowingSettings) {
+            frontFace
+        } back: {
+            SettingsPane()
+        }
+        .animation(.smooth(duration: 0.45), value: store.isShowingSettings)
+        .animation(.smooth(duration: 0.25), value: store.displayStyle)
     }
 
-    @ViewBuilder private var content: some View {
+    /// The current skin, with the ⓘ that turns the card over to the settings
+    /// face. Modern tucks a glass ⓘ into the top-right of its hero card; Retro
+    /// sits a System-7 ⓘ baseline-aligned with the "Moon" / "Phases" titles.
+    @ViewBuilder private var frontFace: some View {
         switch store.displayStyle {
-        case .modern: ModernView()
-        case .retro: RetroView()
+        case .modern:
+            ModernView()
+                .overlay(alignment: .topTrailing) {
+                    FaceCornerButton(systemName: "info") {
+                        store.send(.setShowingSettings(true))
+                    }
+                    .padding([.top, .trailing], 22)
+                }
+        case .retro:
+            RetroView()
+                .overlay(alignment: .topTrailing) {
+                    RetroCornerButton(systemName: "info.square") {
+                        store.send(.setShowingSettings(true))
+                    }
+                    .padding(.top, 8)
+                    .padding(.trailing, 14)
+                }
         }
     }
 }

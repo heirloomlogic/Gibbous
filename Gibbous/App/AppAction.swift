@@ -20,6 +20,9 @@ nonisolated enum AppAction: Sendable {
 
     case setDisplayStyle(DisplayStyle)
     case setSoundsEnabled(Bool)
+
+    /// Flip the popover between its skin face and its settings/about face.
+    case setShowingSettings(Bool)
 }
 
 typealias AppEffect = Swidux.Effect<AppAction>

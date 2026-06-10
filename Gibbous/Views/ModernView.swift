@@ -17,6 +17,7 @@ struct ModernView: View {
             VStack(spacing: 12) {
                 header
                 stats
+                phases
             }
             .padding(12)
         }
@@ -56,10 +57,24 @@ struct ModernView: View {
                 StatRow("Lunation", r.lunationText)
                 StatRow("Julian date", r.julianDateText)
                 StatRow("Moon distance", r.moonDistanceText, secondary: r.moonDistanceEarthRadiiText)
-                StatRow("Sun distance", r.sunDistanceAUText)
+                StatRow("Sun distance", r.sunDistanceText, secondary: r.sunDistanceAUText)
                 StatRow("Moon subtends", r.moonSubtendText)
                 StatRow("Sun subtends", r.sunSubtendText)
                 StatRow("Date", r.localDateText)
+            }
+            .padding(.vertical, 6)
+            .glassSurface(in: .rect(cornerRadius: 16))
+        }
+    }
+
+    /// The current lunation's phase-event timeline — the same five events Retro
+    /// lists, in the Modern ledger style.
+    @ViewBuilder private var phases: some View {
+        if let r = store.readout {
+            VStack(spacing: 0) {
+                ForEach(r.phaseEvents) { event in
+                    StatRow(event.label, r.eventText(event.date))
+                }
             }
             .padding(.vertical, 6)
             .glassSurface(in: .rect(cornerRadius: 16))
