@@ -19,7 +19,9 @@ enum StatusItemGlyph {
         guard let readout, let renderer = MoonRenderer.shared else {
             return fallback(pointSize: pointSize)
         }
-        // Lift the dark limb a touch so it reads against the menu bar.
+        // Lift the dark limb a touch so it reads against the menu bar. The disc
+        // roll (axis position angle) carries through from the readout, so the
+        // glyph rocks with the on-screen moon.
         let request = MoonRenderRequest(readout: readout, style: style, ambient: 0.05)
 
         let pixels = max(1, Int((pointSize * scale).rounded()))
