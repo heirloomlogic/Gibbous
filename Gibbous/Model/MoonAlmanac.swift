@@ -44,6 +44,15 @@ nonisolated enum MoonAlmanac {
         let libration = Moon.libration(at: t)
         let sun = try Sun.position(at: t)
 
+        // The disc's apparent roll: the position angle of the Moon's north pole.
+        // Both the Moon's geocentric direction and its pole vector come back in
+        // the J2000 equatorial frame, so they share a frame for the PA math.
+        let moonVector = try CelestialBody.moon.geocentricPosition(at: t)
+        let moonAxis = try CelestialBody.moon.rotationAxis(at: t)
+        let axisPositionAngle = MoonGeometry.axisPositionAngleDegrees(
+            moonDirection: SIMD3(moonVector.x, moonVector.y, moonVector.z),
+            northPole: SIMD3(moonAxis.north.x, moonAxis.north.y, moonAxis.north.z))
+
         let julianDate = Derivations.julianDate(j2000UTDays: t.universalTime)
         let sunKM = Derivations.sunDistanceKM(au: sun.distance)
 
@@ -69,7 +78,8 @@ nonisolated enum MoonAlmanac {
             lastQuarter: events.lastQuarter,
             nextNewMoon: events.nextNewMoon,
             subEarthLatitude: libration.subEarthLatitude,
-            subEarthLongitude: libration.subEarthLongitude
+            subEarthLongitude: libration.subEarthLongitude,
+            axisPositionAngleDegrees: axisPositionAngle
         )
     }
 

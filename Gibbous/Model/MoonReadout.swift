@@ -53,4 +53,8 @@ nonisolated struct MoonReadout: Equatable, Sendable {
     var subEarthLatitude: Double
     /// Sub-Earth longitude — the disc's east/west tilt toward the viewer.
     var subEarthLongitude: Double
+    /// Position angle of the Moon's north pole, degrees CCW from celestial north
+    /// — the disc's apparent roll (how far the pole leans from straight-up). This
+    /// is the dominant part of the libration "rock" seen as the lunation advances.
+    var axisPositionAngleDegrees: Double = 0
 }

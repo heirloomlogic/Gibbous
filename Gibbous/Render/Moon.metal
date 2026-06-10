@@ -42,7 +42,17 @@ struct MoonUniforms {
     float4 backgroundColor;  // used when not transparent
     float4 retroDark;        // retro "ink"
     float4 retroLight;       // retro "paper"
+    // Appended fields — keep this order identical to MoonUniforms in MoonRenderer.swift.
+    float roll;              // disc roll (axis position angle), radians
+    float surfaceBrightness; // albedo gain
+    float surfaceContrast;   // albedo contrast around the lunar mean
+    float normalStrength;    // crater relief emphasis
 };
+
+// Linear-space mean reflectance of the lunar disc — the pivot the surface
+// contrast curve rotates around (so maria darken and highlands brighten rather
+// than the whole disc crushing to black).
+constant float kLunarMean = 0.12;
 
 // Ordered 8×8 Bayer threshold in (0, 1), for the 1-bit retro dither.
 static float bayer8(uint2 c) {
@@ -75,10 +85,23 @@ fragment float4 moonFragment(VOut in [[stage_in]],
     constexpr sampler smp(coord::normalized, address::repeat,
                           filter::linear, mip_filter::linear);
 
-    float2 p = in.uv * 2.0 - 1.0;   // centre the disc in [-1, 1]
-    p.y = -p.y;                     // +y up
+    float2 sp = in.uv * 2.0 - 1.0;  // centre the disc in [-1, 1]
+    sp.y = -sp.y;                   // +y up
+
+    // Roll the whole picture by the axis position angle: sample the scene at the
+    // de-rotated coordinate and rotate the light frame to match, so features,
+    // terminator and limb darkening all turn together (phase fraction unchanged).
+    float cr = cos(u.roll), sr = sin(u.roll);
+    float2 p = float2(cr * sp.x + sr * sp.y, -sr * sp.x + cr * sp.y);
+
     float r2 = dot(p, p);
-    if (r2 > 1.0) {
+
+    // Analytic edge coverage: feather the silhouette over ~1px instead of a hard
+    // cut, so the disc edge is anti-aliased against whatever sits behind it.
+    float r = sqrt(r2);
+    float aa = max(fwidth(r), 1e-4);
+    float coverage = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, r);
+    if (coverage <= 0.0) {
         return u.transparentOutside ? float4(0.0) : u.backgroundColor;
     }
 
@@ -91,15 +114,21 @@ fragment float4 moonFragment(VOut in [[stage_in]],
     float lon = atan2(Ns.x, Ns.z);
     float2 texUV = float2(lon / (2.0 * M_PI_F) + 0.5, 0.5 - lat / M_PI_F);
 
-    float3 albedo = albedoTex.sample(smp, texUV).rgb;
+    // Sharpen with a negative mip bias so maria/crater detail survives at the
+    // small (96px) Modern disc, then push brightness/contrast so it reads.
+    float3 albedo = albedoTex.sample(smp, texUV, bias(-0.5)).rgb;
+    albedo = (albedo - kLunarMean) * u.surfaceContrast + kLunarMean;
+    albedo = saturate(albedo * u.surfaceBrightness);
 
     // Tangent-space normal mapping for crater relief.
     float3 T = normalize(cross(float3(0.0, 1.0, 0.0), N));
     float3 B = cross(N, T);
-    float3 tn = normalTex.sample(smp, texUV).rgb * 2.0 - 1.0;
+    float3 tn = normalTex.sample(smp, texUV, bias(-0.5)).rgb * 2.0 - 1.0;
+    tn.xy *= u.normalStrength;
     float3 Np = normalize(T * tn.x + B * tn.y + N * tn.z);
 
     float3 L = normalize(u.sunDirection);
+    L.xy = float2(cr * L.x - sr * L.y, sr * L.x + cr * L.y);  // rotate light with the disc
     float ndl = max(dot(Np, L), 0.0);
 
     // Limb darkening: fade toward the limb (z → 0).
@@ -119,5 +148,10 @@ fragment float4 moonFragment(VOut in [[stage_in]],
         color = mix(u.retroDark.rgb, u.retroLight.rgb, bit);
     }
 
-    return float4(color, 1.0);
+    // Apply edge coverage: feather to transparent, or blend onto the background.
+    // The readback treats the image as premultiplied, so premultiply here too.
+    if (u.transparentOutside) {
+        return float4(color * coverage, coverage);
+    }
+    return float4(mix(u.backgroundColor.rgb, color, coverage), 1.0);
 }

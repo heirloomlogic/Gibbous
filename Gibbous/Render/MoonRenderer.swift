@@ -39,6 +39,11 @@ private struct MoonUniforms {
     var backgroundColor: SIMD4<Float>
     var retroDark: SIMD4<Float>
     var retroLight: SIMD4<Float>
+    // Appended fields — keep this order identical to MoonUniforms in Moon.metal.
+    var roll: Float
+    var surfaceBrightness: Float
+    var surfaceContrast: Float
+    var normalStrength: Float
 }
 
 /// Everything the renderer needs to draw one moon.
@@ -49,6 +54,14 @@ nonisolated struct MoonRenderRequest: Equatable {
     var look: MoonLook = .modern
     var limbDarkening: Float = 0.35
     var ambient: Float = 0.015
+    /// Disc roll in degrees — the position angle of the Moon's north pole. The
+    /// whole image rotates by this, so the moon "rocks" as the lunation advances.
+    var rollDegrees: Double = 0
+    /// Surface tone, tuned so maria/craters read like the Apple Weather moon
+    /// rather than the physically dim ~12%-albedo disc.
+    var surfaceBrightness: Float = 2.4  // gain on the albedo
+    var surfaceContrast: Float = 1.4  // contrast around the lunar mean
+    var normalStrength: Float = 1.6  // crater relief emphasis
     /// Transparent outside the disc (menu-bar glyph); otherwise the background
     /// colour fills the frame (modern card).
     var transparentOutside: Bool = true
@@ -166,7 +179,11 @@ nonisolated final class MoonRenderer {
             retroGamma: r.retroGamma,
             backgroundColor: r.backgroundColor,
             retroDark: r.retroDark,
-            retroLight: r.retroLight
+            retroLight: r.retroLight,
+            roll: Float(r.rollDegrees * .pi / 180),
+            surfaceBrightness: r.surfaceBrightness,
+            surfaceContrast: r.surfaceContrast,
+            normalStrength: r.normalStrength
         )
     }
 
@@ -221,6 +238,7 @@ extension MoonRenderRequest {
             subEarthLongitudeDegrees: readout.subEarthLongitude,
             look: style == .retro ? .retro : .modern,
             ambient: ambient,
+            rollDegrees: readout.axisPositionAngleDegrees,
             transparentOutside: true,
             ditherCell: ditherCell
         )
