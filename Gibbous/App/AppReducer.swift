@@ -19,13 +19,13 @@ nonisolated struct AppReducer {
 
         case .tick(let date):
             // The live clock is read from the recomputed readout, not stored
-            // separately — the tick exists only to drive the recompute. Reuse
-            // the current lunation's phase events while "now" is still inside it,
-            // so only the cheap instantaneous queries run each second.
-            let reuse = state.readout.flatMap {
-                $0.containsLunation(of: date) ? $0.lunationEvents : nil
-            }
-            return computeReadout(for: date, reusing: reuse)
+            // separately — the tick exists only to drive the recompute. While
+            // the popover is hidden nothing on screen reads the per-second clock,
+            // so we throttle the expensive ephemeris recompute (see
+            // `shouldRecompute`); the 1 s tick keeps running so crossings are
+            // still caught promptly.
+            guard shouldRecompute(state: state, at: date) else { return nil }
+            return recomputeReadout(state: state, for: date)
 
         case .readoutUpdated(let readout):
             state.readout = readout
@@ -51,7 +51,41 @@ nonisolated struct AppReducer {
         case .setShowingSettings(let value):
             state.isShowingSettings = value
             return nil
+
+        case .setPopoverShown(let value):
+            state.isPopoverShown = value
+            // Showing the popover after a throttled spell can leave the clock
+            // up to one coarse interval stale — refresh immediately on open.
+            guard value else { return nil }
+            return recomputeReadout(state: state, for: environment.now())
         }
+    }
+
+    // MARK: - Recompute cadence
+
+    /// Coarse background recompute cadence while the popover is hidden. While
+    /// shown we recompute every tick (a live seconds clock); while hidden we
+    /// only need to keep the glyph fresh and catch the full-moon crossing — a
+    /// new-moon crossing leaves the lunation and recomputes promptly regardless.
+    private static let backgroundRecomputeInterval: TimeInterval = 30
+
+    /// Whether `date` warrants a fresh (expensive) ephemeris recompute.
+    private func shouldRecompute(state: AppState, at date: Date) -> Bool {
+        guard let readout = state.readout else { return true }  // no readout yet
+        if state.isPopoverShown { return true }  // live seconds clock on screen
+        if !readout.containsLunation(of: date) { return true }  // crossed a lunation boundary
+        if date < readout.now { return true }  // clock moved backward
+        return date.timeIntervalSince(readout.now) >= Self.backgroundRecomputeInterval
+    }
+
+    /// Build the recompute effect for `date`, reusing the current lunation's
+    /// phase events while "now" is still inside it so only the cheap
+    /// instantaneous queries run.
+    private func recomputeReadout(state: AppState, for date: Date) -> AppEffect {
+        let reuse = state.readout.flatMap {
+            $0.containsLunation(of: date) ? $0.lunationEvents : nil
+        }
+        return computeReadout(for: date, reusing: reuse)
     }
 
     // MARK: - Effects

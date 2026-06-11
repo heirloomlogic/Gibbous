@@ -30,6 +30,11 @@ nonisolated struct AppState: Equatable, Sendable {
     /// Whether the popover is flipped to its settings/about face. Ephemeral —
     /// reset to the front face each time the popover opens.
     var isShowingSettings: Bool = false
+    /// Whether the menu-bar popover is currently visible. Drives the recompute
+    /// cadence: a live 1 s clock while shown, a coarse cadence while hidden (the
+    /// clock still ticks every second, but the expensive ephemeris recompute is
+    /// throttled when nothing on screen reads it).
+    var isPopoverShown: Bool = false
     /// The upcoming full moon we've seen approaching this session — so we only
     /// howl on a live crossing, never for a full moon already past at launch.
     var armedFullMoon: Date? = nil

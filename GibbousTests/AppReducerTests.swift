@@ -120,6 +120,66 @@ struct AppReducerTests {
         #expect(spy.calls.last! == nil)
     }
 
+    // MARK: Recompute cadence (throttle while the popover is hidden)
+
+    /// A readout whose lunation window brackets `now`, for cadence tests.
+    func cadenceReadout(now: Date) -> MoonReadout {
+        let lastNew = now
+        let nextNew = now.addingTimeInterval(29.5 * 86_400)
+        return lunationReadout(now: now, lastNew: lastNew, nextNew: nextNew)
+    }
+
+    @Test func tickRecomputesEverySecondWhilePopoverShown() {
+        let reducer = makeReducer()
+        let t0 = Date(timeIntervalSinceReferenceDate: 0)
+        var state = AppState()
+        state.readout = cadenceReadout(now: t0)
+        state.isPopoverShown = true
+        // One second later, still "fresh" — but shown means recompute for the
+        // live seconds clock.
+        let effect = reducer.reduce(state: &state, action: .tick(t0.addingTimeInterval(1)))
+        #expect(effect != nil)
+    }
+
+    @Test func tickThrottlesRecomputeWhileHiddenAndFresh() {
+        let reducer = makeReducer()
+        let t0 = Date(timeIntervalSinceReferenceDate: 0)
+        var state = AppState()
+        state.readout = cadenceReadout(now: t0)
+        state.isPopoverShown = false
+        // Within the coarse interval and hidden → no recompute.
+        let effect = reducer.reduce(state: &state, action: .tick(t0.addingTimeInterval(5)))
+        #expect(effect == nil)
+    }
+
+    @Test func tickRecomputesWhileHiddenOnceStale() {
+        let reducer = makeReducer()
+        let t0 = Date(timeIntervalSinceReferenceDate: 0)
+        var state = AppState()
+        state.readout = cadenceReadout(now: t0)
+        state.isPopoverShown = false
+        // Past the coarse interval → recompute to keep the glyph fresh.
+        let effect = reducer.reduce(state: &state, action: .tick(t0.addingTimeInterval(31)))
+        #expect(effect != nil)
+    }
+
+    @Test func showingPopoverRefreshesImmediatelyAndSetsFlag() {
+        let reducer = makeReducer()
+        var state = AppState()
+        let effect = reducer.reduce(state: &state, action: .setPopoverShown(true))
+        #expect(state.isPopoverShown)
+        #expect(effect != nil)  // immediate refresh so the clock isn't stale on open
+    }
+
+    @Test func hidingPopoverSetsFlagWithoutRefresh() {
+        let reducer = makeReducer()
+        var state = AppState()
+        state.isPopoverShown = true
+        let effect = reducer.reduce(state: &state, action: .setPopoverShown(false))
+        #expect(state.isPopoverShown == false)
+        #expect(effect == nil)
+    }
+
     @Test func readoutUpdatedStoresAndClearsUnavailable() {
         let reducer = makeReducer()
         var state = AppState()
