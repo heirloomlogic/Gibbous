@@ -26,20 +26,44 @@ nonisolated extension MoonReadout {
         lastNewMoon <= date && date < nextNewMoon
     }
 
-    /// A labelled phase event in the current lunation.
+    /// A labelled phase event in the current lunation. `kind` is the stable,
+    /// locale-independent identity (so `ForEach` doesn't re-diff when the
+    /// localized `label` changes); `label` is the display string.
     struct PhaseEvent: Identifiable {
-        var id: String { label }
-        let label: String
+        enum Kind { case lastNew, firstQuarter, fullMoon, lastQuarter, nextNew }
+        let kind: Kind
+        let label: LocalizedStringResource
         let date: Date
+        var id: Kind { kind }
     }
 
     var phaseEvents: [PhaseEvent] {
         [
-            PhaseEvent(label: "Last New", date: lastNewMoon),
-            PhaseEvent(label: "First Quarter", date: firstQuarter),
-            PhaseEvent(label: "Full Moon", date: fullMoon),
-            PhaseEvent(label: "Last Quarter", date: lastQuarter),
-            PhaseEvent(label: "Next New", date: nextNewMoon),
+            PhaseEvent(
+                kind: .lastNew,
+                label: LocalizedStringResource(
+                    "phase.event.lastNew", defaultValue: "Last New",
+                    comment: "Phase-timeline row: the New Moon that began the current lunation."), date: lastNewMoon),
+            PhaseEvent(
+                kind: .firstQuarter,
+                label: LocalizedStringResource(
+                    "phase.event.firstQuarter", defaultValue: "First Quarter",
+                    comment: "Phase-timeline row: the First Quarter Moon."), date: firstQuarter),
+            PhaseEvent(
+                kind: .fullMoon,
+                label: LocalizedStringResource(
+                    "phase.event.fullMoon", defaultValue: "Full Moon",
+                    comment: "Phase-timeline row: the Full Moon."), date: fullMoon),
+            PhaseEvent(
+                kind: .lastQuarter,
+                label: LocalizedStringResource(
+                    "phase.event.lastQuarter", defaultValue: "Last Quarter",
+                    comment: "Phase-timeline row: the Last Quarter Moon."), date: lastQuarter),
+            PhaseEvent(
+                kind: .nextNew,
+                label: LocalizedStringResource(
+                    "phase.event.nextNew", defaultValue: "Next New",
+                    comment: "Phase-timeline row: the New Moon that ends the current lunation."), date: nextNewMoon),
         ]
     }
 

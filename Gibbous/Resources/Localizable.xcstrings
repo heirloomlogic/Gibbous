@@ -1,0 +1,219 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "about.homage" : {
+      "comment" : "Credit line naming the two original apps Gibbous pays tribute to and the library it is built on. Keep the names \"Moontool\", \"Moon Tool\", \"John Walker\", \"Richard Knuckey\", and \"AstronomyKit\" as-is; the year 1988 refers to the original Moontool.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An homage to Moontool by John Walker (1988) and the Macintosh Moon Tool by Richard Knuckey. Built on AstronomyKit."
+          }
+        }
+      }
+    },
+    "about.link" : {
+      "comment" : "Label for the link to the maker. Keep \"Heirloom Logic\" as-is.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coming from Heirloom Logic"
+          }
+        }
+      }
+    },
+    "about.observatory.body" : {
+      "comment" : "Contemplative line introducing the two sibling apps. Keep the product names \"Fallow\" and \"Edict\" as-is.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fallow, a companion for lunar fasting, and Edict, for choosing the right moment to act."
+          }
+        }
+      }
+    },
+    "about.observatory.header" : {
+      "comment" : "Small all-caps section header above the line about the sibling apps Fallow and Edict.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FROM THE SAME OBSERVATORY"
+          }
+        }
+      }
+    },
+    "about.tagline" : {
+      "comment" : "One-line description under the app name in the About panel.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A menu-bar moon companion for the Mac."
+          }
+        }
+      }
+    },
+    "About" : {
+      "comment" : "Title of the Retro \"About\" group box."
+    },
+    "Age" : {
+      "comment" : "Row label for the Moon's age in the Moon Age box (Retro skin)."
+    },
+    "Date" : {
+      "comment" : "Row label for the local calendar date (Modern skin)."
+    },
+    "Distance" : {
+      "comment" : "Title of the group box showing the distance to the Moon and Sun."
+    },
+    "Julian date" : {
+      "comment" : "Row label for the Julian Date (Modern skin)."
+    },
+    "Lunation" : {
+      "comment" : "Row label for the lunation (synodic month) number, in both skins."
+    },
+    "Modern" : {
+      "comment" : "Skin option: the modern 2026 dashboard."
+    },
+    "Moon" : {
+      "comment" : "Label for the Moon. Used both as a group-box title (the hero) and as a row label in the Distance box."
+    },
+    "Moon Age" : {
+      "comment" : "Title of the group box showing the Moon's age and lunation number (Retro skin)."
+    },
+    "Moon age" : {
+      "comment" : "Row label for the Moon's age (Modern skin)."
+    },
+    "Moon distance" : {
+      "comment" : "Row label for the distance to the Moon (Modern skin)."
+    },
+    "Moon subtends" : {
+      "comment" : "Row label for the Moon's angular diameter — the angle it subtends in the sky (Modern skin)."
+    },
+    "Moon unavailable" : {
+      "comment" : "Shown in place of the Moon disc when the ephemeris cannot be computed."
+    },
+    "Moon ∅" : {
+      "comment" : "Row label: the Moon's angular diameter (Retro skin). ∅ is the diameter symbol."
+    },
+    "Phase Sounds" : {
+      "comment" : "Toggle: play a short sound at the New and Full Moon."
+    },
+    "Phases of the Moon" : {
+      "comment" : "Title of the group box listing the dates of this lunation's phase events."
+    },
+    "Quit" : {
+      "comment" : "Button that quits the app (Retro skin)."
+    },
+    "Quit Gibbous" : {
+      "comment" : "Button that quits the app (Modern skin). Keep \"Gibbous\" as-is."
+    },
+    "Retro" : {
+      "comment" : "Skin option: the 1988 System-7 style."
+    },
+    "Settings" : {
+      "comment" : "Title of the Retro \"Settings\" group box."
+    },
+    "Skin" : {
+      "comment" : "Settings label and segmented-control title for choosing the visual skin (Modern or Retro)."
+    },
+    "Subtend" : {
+      "comment" : "Title of the group box showing the angular diameter (the subtended angle) of the Moon and Sun (Retro skin)."
+    },
+    "Sun" : {
+      "comment" : "Row label for the Sun in the Distance box."
+    },
+    "Sun distance" : {
+      "comment" : "Row label for the distance to the Sun (Modern skin)."
+    },
+    "Sun subtends" : {
+      "comment" : "Row label for the Sun's angular diameter — the angle it subtends in the sky (Modern skin)."
+    },
+    "Sun ∅" : {
+      "comment" : "Row label: the Sun's angular diameter (Retro skin). ∅ is the diameter symbol."
+    },
+    "Time and Date" : {
+      "comment" : "Title of the footer group box showing local time, date, and Julian Date."
+    },
+    "moon.illumination" : {
+      "comment" : "Caption under the phase name: the share of the Moon's disc currently lit, e.g. \"63.2% illuminated\". %@ is the already-formatted percentage.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ illuminated"
+          }
+        }
+      }
+    },
+    "phase.event.firstQuarter" : {
+      "comment" : "Phase-timeline row: the First Quarter Moon.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First Quarter"
+          }
+        }
+      }
+    },
+    "phase.event.fullMoon" : {
+      "comment" : "Phase-timeline row: the Full Moon.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full Moon"
+          }
+        }
+      }
+    },
+    "phase.event.lastNew" : {
+      "comment" : "Phase-timeline row: the New Moon that began the current lunation.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last New"
+          }
+        }
+      }
+    },
+    "phase.event.lastQuarter" : {
+      "comment" : "Phase-timeline row: the Last Quarter Moon.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Quarter"
+          }
+        }
+      }
+    },
+    "phase.event.nextNew" : {
+      "comment" : "Phase-timeline row: the New Moon that ends the current lunation.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next New"
+          }
+        }
+      }
+    },
+    "readout.julianDate.short" : {
+      "comment" : "Julian Date readout in the Time and Date footer. \"JD\" is the standard abbreviation for Julian Date; %@ is the numeric value.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JD %@"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

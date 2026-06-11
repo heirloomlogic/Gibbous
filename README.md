@@ -117,11 +117,11 @@ A homage to *Moontool* by John Walker (1988) and the Macintosh *Moon Tool* by Ri
 ## From Heirloom Logic
 
 Gibbous is free, and it's a front door. The same engine and craft go into
-[Heirloom Logic](https://github.com/heirloomlogic)'s apps — two of them are the
+[Heirloom Logic](https://heirloomlogic.com/)'s apps — two of them are the
 Moon you're watching here, taken further:
 
-- **Fallow** — a celestial almanac for lunar practice: rest and observance, kept by the same Moon.
-- **Edict** — an observatory for timing what matters, read from the same sky.
+- **Fallow** — a companion for lunar fasting, keeping a fast in time with the Moon.
+- **Edict** — for choosing the right moment to act on a decision.
 
 Both are built on AstronomyKit, like Gibbous. Coming from Heirloom Logic.
 

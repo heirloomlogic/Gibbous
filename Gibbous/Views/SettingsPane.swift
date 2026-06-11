@@ -16,21 +16,49 @@ import SwiftUI
 /// AstronomyKit per the legal guardrails, and keeps the one quiet door to the
 /// rest of Heirloom Logic. Both skins render these exact strings.
 enum AboutCopy {
+    /// The product name. A proper noun — rendered with `Text(verbatim:)` and kept
+    /// out of the String Catalog so it never gets "translated".
     static let name = "Gibbous"
-    static let tagline = "A charming menu-bar moon companion for the Mac."
-    static let homage =
-        """
-        A homage to Moontool by John Walker (1988) and the Macintosh Moon Tool \
-        by Richard Knuckey. Built on AstronomyKit.
-        """
-    static let observatoryHeader = "FROM THE SAME OBSERVATORY"
-    static let observatoryBody =
-        """
-        Fallow, a celestial almanac for lunar practice, and Edict, an observatory \
-        for timing what matters — both read from the same sky.
-        """
-    static let linkLabel = "Coming from Heirloom Logic"
-    static let heirloomURL = URL(string: "https://github.com/heirloomlogic")
+    static let tagline = LocalizedStringResource(
+        "about.tagline",
+        defaultValue: "A menu-bar moon companion for the Mac.",
+        comment: "One-line description under the app name in the About panel."
+    )
+    static let homage = LocalizedStringResource(
+        "about.homage",
+        defaultValue: """
+            An homage to Moontool by John Walker (1988) and the Macintosh Moon Tool \
+            by Richard Knuckey. Built on AstronomyKit.
+            """,
+        comment: """
+            Credit line naming the two original apps Gibbous pays tribute to and the \
+            library it is built on. Keep the names "Moontool", "Moon Tool", \
+            "John Walker", "Richard Knuckey", and "AstronomyKit" as-is; the year 1988 \
+            refers to the original Moontool.
+            """
+    )
+    static let observatoryHeader = LocalizedStringResource(
+        "about.observatory.header",
+        defaultValue: "FROM THE SAME OBSERVATORY",
+        comment: "Small all-caps section header above the line about the sibling apps Fallow and Edict."
+    )
+    static let observatoryBody = LocalizedStringResource(
+        "about.observatory.body",
+        defaultValue: """
+            Fallow, a companion for lunar fasting, and Edict, for choosing the \
+            right moment to act.
+            """,
+        comment: """
+            Contemplative line introducing the two sibling apps. Keep the product \
+            names "Fallow" and "Edict" as-is.
+            """
+    )
+    static let linkLabel = LocalizedStringResource(
+        "about.link",
+        defaultValue: "Coming from Heirloom Logic",
+        comment: "Label for the link to the maker. Keep \"Heirloom Logic\" as-is."
+    )
+    static let heirloomURL = URL(string: "https://heirloomlogic.com/")
 }
 
 extension View {
@@ -113,7 +141,7 @@ struct ModernSettingsView: View {
         VStack(spacing: 10) {
             Image(systemName: "moon.stars.fill")
                 .font(.system(size: 32)).foregroundStyle(.secondary)
-            Text(AboutCopy.name).font(.title3.weight(.semibold))
+            Text(verbatim: AboutCopy.name).font(.title3.weight(.semibold))
             Text(AboutCopy.tagline)
                 .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
             Text(AboutCopy.homage)
@@ -191,7 +219,7 @@ struct RetroSettingsView: View {
             }
             RetroGroupBox(title: "About") {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(AboutCopy.name).font(RetroTheme.font(14))
+                    Text(verbatim: AboutCopy.name).font(RetroTheme.font(14))
                     Text(AboutCopy.tagline)
                         .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
                         .fixedSize(horizontal: false, vertical: true)
@@ -247,7 +275,7 @@ struct RetroCornerButton: View {
 
 /// A System-7 radio: an outlined ring with a filled centre when chosen.
 private struct RetroRadio: View {
-    let label: String
+    let label: LocalizedStringResource
     let selected: Bool
     let action: () -> Void
 
@@ -273,7 +301,7 @@ private struct RetroRadio: View {
 
 /// A System-7 checkbox: an outlined square with an ✕ when checked.
 private struct RetroCheckbox: View {
-    let label: String
+    let label: LocalizedStringResource
     let on: Bool
     let action: () -> Void
 
@@ -303,7 +331,7 @@ private struct RetroCheckbox: View {
 
 /// A System-7 push button: a Chicago label in a 1px-bordered rounded rectangle.
 struct RetroPushButton: View {
-    let label: String
+    let label: LocalizedStringResource
     let action: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
