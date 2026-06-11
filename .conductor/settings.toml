@@ -1,0 +1,9 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+run = "./Scripts/conductor-run.sh"
+# Gibbous persists scalar preferences through the standard UserDefaults domain
+# keyed by its bundle identifier (com.heirloomlogic.Gibbous). Running two
+# workspaces' copies at once would have them fight over the same persisted
+# preferences, so serialize runs.
+run_mode = "nonconcurrent"
