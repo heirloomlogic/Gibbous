@@ -27,6 +27,9 @@ nonisolated struct AppState: Equatable, Sendable {
     // Live session state (not persisted).
     var readout: MoonReadout? = nil
     var isUnavailable: Bool = false
+    /// Whether the popover is flipped to its settings/about face. Ephemeral —
+    /// reset to the front face each time the popover opens.
+    var isShowingSettings: Bool = false
     /// The upcoming full moon we've seen approaching this session — so we only
     /// howl on a live crossing, never for a full moon already past at launch.
     var armedFullMoon: Date? = nil

@@ -17,13 +17,19 @@ final class MenuBarController: NSObject {
     private let store: AppStore
     private let statusItem: NSStatusItem
     private let popover = NSPopover()
+    private let hosting: NSHostingController<AnyView>
     private var glyphTimer: Timer?
     private var lastGlyphKey: String?
 
     init(store: AppStore) {
         self.store = store
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        hosting = NSHostingController(rootView: AnyView(CompanionView().environment(store)))
         super.init()
+        // Track the SwiftUI intrinsic size so the popover resizes as the card
+        // flips and as the skin changes (Modern ≈ 300pt, Retro ≈ 600pt, and the
+        // settings backs differ again).
+        hosting.sizingOptions = [.preferredContentSize]
         configureStatusItem()
         configurePopover()
         refreshGlyph(force: true)
@@ -37,32 +43,26 @@ final class MenuBarController: NSObject {
         guard let button = statusItem.button else { return }
         button.target = self
         button.action = #selector(statusItemClicked)
-        button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        button.sendAction(on: [.leftMouseUp])
         button.toolTip = "Gibbous"
     }
 
-    @objc private func statusItemClicked() {
-        guard let event = NSApp.currentEvent else { return togglePopdown() }
-        if event.type == .rightMouseUp {
-            showContextMenu()
-        } else {
-            togglePopdown()
-        }
-    }
+    @objc private func statusItemClicked() { togglePopdown() }
 
     // MARK: - Popdown
 
     private func configurePopover() {
         popover.behavior = .transient
         popover.animates = true
-        popover.contentViewController = NSHostingController(
-            rootView: CompanionView().environment(store))
+        popover.contentViewController = hosting
     }
 
     private func togglePopdown() {
         if popover.isShown {
             popover.performClose(nil)
         } else if let button = statusItem.button {
+            // Always open to the front (skin) face, never mid-flip.
+            store.send(.setShowingSettings(false))
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             // Activate so the popover window becomes key: this makes its content
             // render in the system appearance immediately (not the default light
@@ -71,43 +71,6 @@ final class MenuBarController: NSObject {
             popover.contentViewController?.view.window?.makeKey()
         }
     }
-
-    // MARK: - Context menu
-
-    private func showContextMenu() {
-        guard let button = statusItem.button else { return }
-        let menu = NSMenu()
-
-        for style in DisplayStyle.allCases {
-            let item = NSMenuItem(
-                title: style.rawValue.capitalized, action: #selector(menuSelectStyle), keyEquivalent: "")
-            item.target = self
-            item.state = store.displayStyle == style ? .on : .off
-            item.representedObject = style
-            menu.addItem(item)
-        }
-
-        menu.addItem(.separator())
-
-        let sounds = NSMenuItem(title: "Phase Sounds", action: #selector(menuToggleSounds), keyEquivalent: "")
-        sounds.target = self
-        sounds.state = store.soundsEnabled ? .on : .off
-        menu.addItem(sounds)
-
-        menu.addItem(.separator())
-        menu.addItem(withAction: "About Gibbous", target: self, action: #selector(menuAbout))
-        menu.addItem(withAction: "Quit Gibbous", target: self, action: #selector(menuQuit))
-
-        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height + 4), in: button)
-    }
-
-    @objc private func menuSelectStyle(_ sender: NSMenuItem) {
-        guard let style = sender.representedObject as? DisplayStyle else { return }
-        store.send(.setDisplayStyle(style))
-    }
-    @objc private func menuToggleSounds() { store.send(.setSoundsEnabled(!store.soundsEnabled)) }
-    @objc private func menuAbout() { AboutWindow.show() }
-    @objc private func menuQuit() { NSApp.terminate(nil) }
 
     // MARK: - Glyph
 
@@ -136,13 +99,5 @@ final class MenuBarController: NSObject {
         guard force || key != lastGlyphKey else { return }
         lastGlyphKey = key
         statusItem.button?.image = StatusItemGlyph.image(for: store.readout, style: store.displayStyle)
-    }
-}
-
-extension NSMenu {
-    fileprivate func addItem(withAction title: String, target: AnyObject, action: Selector) {
-        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
-        item.target = target
-        addItem(item)
     }
 }

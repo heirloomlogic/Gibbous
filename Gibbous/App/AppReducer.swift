@@ -47,6 +47,10 @@ nonisolated struct AppReducer {
         case .setSoundsEnabled(let value):
             state.soundsEnabled = value
             return persist(value, for: .soundsEnabled)
+
+        case .setShowingSettings(let value):
+            state.isShowingSettings = value
+            return nil
         }
     }
 
