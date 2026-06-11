@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/heirloomlogic/AstronomyKit",
       "state" : {
-        "revision" : "708494224a8d60d7f6ae73550ef6609674cb4784",
-        "version" : "1.0.0+upstream-2.1.19"
+        "revision" : "aa94f880dfdda22bb8270234504ce9b2f8b1478f",
+        "version" : "1.1.0+upstream-2.1.19"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/heirloomlogic/Swidux",
       "state" : {
-        "revision" : "6c64f11f6ed90eacfc3b5a4408fa970093347d8e",
-        "version" : "1.2.0"
+        "revision" : "966f3ad3245c373fa8b6556b02e980ae80587255",
+        "version" : "1.4.0"
       }
     },
     {

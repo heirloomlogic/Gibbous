@@ -1,6 +1,21 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "About" : {
+      "comment" : "Title of the Retro \"About\" group box."
+    },
+    "about.dedication" : {
+      "comment" : "Personal dedication line under the tagline in the About panel. Keep \"KJS\" as-is.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Made for KJS with Love."
+          }
+        }
+      }
+    },
     "about.homage" : {
       "comment" : "Credit line naming the two original apps Gibbous pays tribute to and the library it is built on. Keep the names \"Moontool\", \"Moon Tool\", \"John Walker\", \"Richard Knuckey\", and \"AstronomyKit\" as-is; the year 1988 refers to the original Moontool.",
       "localizations" : {
@@ -56,9 +71,6 @@
         }
       }
     },
-    "About" : {
-      "comment" : "Title of the Retro \"About\" group box."
-    },
     "Age" : {
       "comment" : "Row label for the Moon's age in the Moon Age box (Retro skin)."
     },
@@ -80,11 +92,14 @@
     "Moon" : {
       "comment" : "Label for the Moon. Used both as a group-box title (the hero) and as a row label in the Distance box."
     },
-    "Moon Age" : {
-      "comment" : "Title of the group box showing the Moon's age and lunation number (Retro skin)."
+    "Moon ∅" : {
+      "comment" : "Row label: the Moon's angular diameter (Retro skin). ∅ is the diameter symbol."
     },
     "Moon age" : {
       "comment" : "Row label for the Moon's age (Modern skin)."
+    },
+    "Moon Age" : {
+      "comment" : "Title of the group box showing the Moon's age and lunation number (Retro skin)."
     },
     "Moon distance" : {
       "comment" : "Row label for the distance to the Moon (Modern skin)."
@@ -94,48 +109,6 @@
     },
     "Moon unavailable" : {
       "comment" : "Shown in place of the Moon disc when the ephemeris cannot be computed."
-    },
-    "Moon ∅" : {
-      "comment" : "Row label: the Moon's angular diameter (Retro skin). ∅ is the diameter symbol."
-    },
-    "Phase Sounds" : {
-      "comment" : "Toggle: play a short sound at the New and Full Moon."
-    },
-    "Phases of the Moon" : {
-      "comment" : "Title of the group box listing the dates of this lunation's phase events."
-    },
-    "Quit" : {
-      "comment" : "Button that quits the app (Retro skin)."
-    },
-    "Quit Gibbous" : {
-      "comment" : "Button that quits the app (Modern skin). Keep \"Gibbous\" as-is."
-    },
-    "Retro" : {
-      "comment" : "Skin option: the 1988 System-7 style."
-    },
-    "Settings" : {
-      "comment" : "Title of the Retro \"Settings\" group box."
-    },
-    "Skin" : {
-      "comment" : "Settings label and segmented-control title for choosing the visual skin (Modern or Retro)."
-    },
-    "Subtend" : {
-      "comment" : "Title of the group box showing the angular diameter (the subtended angle) of the Moon and Sun (Retro skin)."
-    },
-    "Sun" : {
-      "comment" : "Row label for the Sun in the Distance box."
-    },
-    "Sun distance" : {
-      "comment" : "Row label for the distance to the Sun (Modern skin)."
-    },
-    "Sun subtends" : {
-      "comment" : "Row label for the Sun's angular diameter — the angle it subtends in the sky (Modern skin)."
-    },
-    "Sun ∅" : {
-      "comment" : "Row label: the Sun's angular diameter (Retro skin). ∅ is the diameter symbol."
-    },
-    "Time and Date" : {
-      "comment" : "Title of the footer group box showing local time, date, and Julian Date."
     },
     "moon.illumination" : {
       "comment" : "Caption under the phase name: the share of the Moon's disc currently lit, e.g. \"63.2% illuminated\". %@ is the already-formatted percentage.",
@@ -147,6 +120,9 @@
           }
         }
       }
+    },
+    "Phase Sounds" : {
+      "comment" : "Toggle: play a short sound at the New and Full Moon."
     },
     "phase.event.firstQuarter" : {
       "comment" : "Phase-timeline row: the First Quarter Moon.",
@@ -203,6 +179,15 @@
         }
       }
     },
+    "Phases of the Moon" : {
+      "comment" : "Title of the group box listing the dates of this lunation's phase events."
+    },
+    "Quit" : {
+      "comment" : "Button that quits the app (Retro skin)."
+    },
+    "Quit Gibbous" : {
+      "comment" : "Button that quits the app (Modern skin). Keep \"Gibbous\" as-is."
+    },
     "readout.julianDate.short" : {
       "comment" : "Julian Date readout in the Time and Date footer. \"JD\" is the standard abbreviation for Julian Date; %@ is the numeric value.",
       "localizations" : {
@@ -213,6 +198,33 @@
           }
         }
       }
+    },
+    "Retro" : {
+      "comment" : "Skin option: the 1988 System-7 style."
+    },
+    "Settings" : {
+      "comment" : "Title of the Retro \"Settings\" group box."
+    },
+    "Skin" : {
+      "comment" : "Settings label and segmented-control title for choosing the visual skin (Modern or Retro)."
+    },
+    "Subtend" : {
+      "comment" : "Title of the group box showing the angular diameter (the subtended angle) of the Moon and Sun (Retro skin)."
+    },
+    "Sun" : {
+      "comment" : "Row label for the Sun in the Distance box."
+    },
+    "Sun ∅" : {
+      "comment" : "Row label: the Sun's angular diameter (Retro skin). ∅ is the diameter symbol."
+    },
+    "Sun distance" : {
+      "comment" : "Row label for the distance to the Sun (Modern skin)."
+    },
+    "Sun subtends" : {
+      "comment" : "Row label for the Sun's angular diameter — the angle it subtends in the sky (Modern skin)."
+    },
+    "Time and Date" : {
+      "comment" : "Title of the footer group box showing local time, date, and Julian Date."
     }
   },
   "version" : "1.0"

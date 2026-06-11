@@ -24,6 +24,11 @@ enum AboutCopy {
         defaultValue: "A menu-bar moon companion for the Mac.",
         comment: "One-line description under the app name in the About panel."
     )
+    static let dedication = LocalizedStringResource(
+        "about.dedication",
+        defaultValue: "Made for KJS with Love.",
+        comment: "Personal dedication line under the tagline in the About panel. Keep \"KJS\" as-is."
+    )
     static let homage = LocalizedStringResource(
         "about.homage",
         defaultValue: """
@@ -139,15 +144,25 @@ struct ModernSettingsView: View {
 
     private var about: some View {
         VStack(spacing: 10) {
-            Image(systemName: "moon.stars.fill")
-                .font(.system(size: 32)).foregroundStyle(.secondary)
+            Group {
+                if let readout = store.readout {
+                    MoonDiscView(request: MoonRenderRequest(readout: readout, style: .modern))
+                } else {
+                    Image(systemName: "moon.stars.fill")
+                        .font(.system(size: 32)).foregroundStyle(.secondary)
+                }
+            }
+            .frame(width: 44, height: 44)
+
             Text(verbatim: AboutCopy.name).font(.title3.weight(.semibold))
             Text(AboutCopy.tagline)
                 .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
             Text(AboutCopy.homage)
                 .font(.caption2).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+
             Divider().frame(width: 180)
+
             Text(AboutCopy.observatoryHeader)
                 .font(.caption2.weight(.medium)).tracking(0.75).foregroundStyle(.tertiary)
             Text(AboutCopy.observatoryBody)
@@ -158,6 +173,11 @@ struct ModernSettingsView: View {
                     .font(.caption.weight(.medium))
                     .pointerCursor()
             }
+
+            Divider().frame(width: 180)
+
+            Text(AboutCopy.dedication)
+                .font(.caption).italic().foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .padding(.horizontal, 14).padding(.vertical, 14)
         .frame(maxWidth: .infinity)
@@ -236,6 +256,9 @@ struct RetroSettingsView: View {
                             .font(RetroTheme.font(11))
                             .pointerCursor()
                     }
+                    Text(AboutCopy.dedication)
+                        .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
