@@ -116,7 +116,17 @@ struct RetroView: View {
                 HStack(spacing: 8) {
                     Text(r.localDateText)
                     Spacer(minLength: 8)
-                    Text("JD \(r.julianDateText)").foregroundStyle(palette.muted)
+                    Text(
+                        LocalizedStringResource(
+                            "readout.julianDate.short",
+                            defaultValue: "JD \(r.julianDateText)",
+                            comment: """
+                                Julian Date readout in the Time and Date footer. "JD" is \
+                                the standard abbreviation for Julian Date; %@ is the \
+                                numeric value.
+                                """)
+                    )
+                    .foregroundStyle(palette.muted)
                     Spacer(minLength: 8)
                     Text(r.localTimeText)
                 }
@@ -137,9 +147,18 @@ struct RetroView: View {
                     VStack(spacing: 2) {
                         Text(r.phaseName)
                             .font(RetroTheme.font(14))
-                        Text("\(r.illuminationText) illuminated")
-                            .font(RetroTheme.font(11))
-                            .foregroundStyle(palette.muted)
+                        Text(
+                            LocalizedStringResource(
+                                "moon.illumination",
+                                defaultValue: "\(r.illuminationText) illuminated",
+                                comment: """
+                                    Caption under the phase name: the share of the Moon's \
+                                    disc currently lit, e.g. "63.2% illuminated". %@ is the \
+                                    already-formatted percentage.
+                                    """)
+                        )
+                        .font(RetroTheme.font(11))
+                        .foregroundStyle(palette.muted)
                     }
                 }
             }
@@ -163,7 +182,7 @@ struct RetroView: View {
 
     /// A ledger line: a dimmed label on the left, the value spread to the box's
     /// right edge. Distance uses `distanceRow` for its aligned unit columns.
-    private func retroLine(_ label: String, _ value: String) -> some View {
+    private func retroLine(_ label: LocalizedStringResource, _ value: String) -> some View {
         HStack(spacing: 8) {
             Text(label).foregroundStyle(palette.ink.opacity(0.55))
             Spacer(minLength: 8)
@@ -176,7 +195,7 @@ struct RetroView: View {
     /// A Distance row in the two-unit layout: a dimmed label on the left, then the
     /// km value and the secondary unit (ER / AU) right-aligned into shared columns,
     /// the way Moon Tool tabulates distance.
-    private func distanceRow(_ label: String, _ primary: String, _ secondary: String) -> some View {
+    private func distanceRow(_ label: LocalizedStringResource, _ primary: String, _ secondary: String) -> some View {
         GridRow {
             Text(label)
                 .foregroundStyle(palette.ink.opacity(0.55))
@@ -194,7 +213,7 @@ struct RetroView: View {
 /// frame and behind the content; only the 1px engraved rule and a faint inner
 /// highlight (resolved per appearance) draw the System-7 outline.
 struct RetroGroupBox<Content: View>: View {
-    let title: String
+    let title: LocalizedStringResource
     /// When true, the framed area stretches to fill the available height (its
     /// content stays top-anchored). Used by the hero so its frame bottom lines
     /// up with the taller data column beside it.

@@ -44,6 +44,8 @@ final class MenuBarController: NSObject {
         button.target = self
         button.action = #selector(statusItemClicked)
         button.sendAction(on: [.leftMouseUp])
+        // The product name — intentionally not localized (a proper noun), so it
+        // stays a plain literal and out of the String Catalog.
         button.toolTip = "Gibbous"
     }
 

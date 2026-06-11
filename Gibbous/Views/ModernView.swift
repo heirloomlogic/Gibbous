@@ -33,8 +33,17 @@ struct ModernView: View {
                     .glassSurface(in: .circle)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(readout.phaseName).font(.headline)
-                    Text("\(readout.illuminationText) lit")
-                        .font(.subheadline).foregroundStyle(.secondary)
+                    Text(
+                        LocalizedStringResource(
+                            "moon.illumination",
+                            defaultValue: "\(readout.illuminationText) illuminated",
+                            comment: """
+                                Caption under the phase name: the share of the Moon's disc \
+                                currently lit, e.g. "63.2% illuminated". %@ is the \
+                                already-formatted percentage.
+                                """)
+                    )
+                    .font(.subheadline).foregroundStyle(.secondary)
                     Text(readout.localTimeText)
                         .font(.system(.title3, design: .rounded).monospacedDigit())
                         .padding(.top, 2)
@@ -83,11 +92,11 @@ struct ModernView: View {
 }
 
 private struct StatRow: View {
-    let title: String
+    let title: LocalizedStringResource
     let value: String
     var secondary: String?
 
-    init(_ title: String, _ value: String, secondary: String? = nil) {
+    init(_ title: LocalizedStringResource, _ value: String, secondary: String? = nil) {
         self.title = title
         self.value = value
         self.secondary = secondary
