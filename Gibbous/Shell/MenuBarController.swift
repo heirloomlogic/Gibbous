@@ -57,6 +57,7 @@ final class MenuBarController: NSObject {
         popover.behavior = .transient
         popover.animates = true
         popover.contentViewController = hosting
+        popover.delegate = self
     }
 
     private func togglePopdown() {
@@ -101,5 +102,17 @@ final class MenuBarController: NSObject {
         guard force || key != lastGlyphKey else { return }
         lastGlyphKey = key
         statusItem.button?.image = StatusItemGlyph.image(for: store.readout, style: store.displayStyle)
+    }
+}
+
+// MARK: - Popover visibility
+
+extension MenuBarController: NSPopoverDelegate {
+    func popoverDidShow(_ notification: Notification) {
+        store.send(.setPopoverShown(true))
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        store.send(.setPopoverShown(false))
     }
 }

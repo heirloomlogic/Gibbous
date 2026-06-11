@@ -87,28 +87,30 @@ nonisolated extension MoonReadout {
     // MARK: Times
 
     /// The local clock at "now", e.g. "21:58:18".
-    var localTimeText: String { string(now, Self.clock) }
+    @MainActor var localTimeText: String { string(now, Self.clock) }
     /// Local date at "now", e.g. "5 Oct 2014".
-    var localDateText: String { string(now, Self.day) }
+    @MainActor var localDateText: String { string(now, Self.day) }
 
     /// Format a phase-event date in the display timezone, e.g. "8 Oct 10:51".
-    func eventText(_ date: Date) -> String { string(date, Self.event) }
+    @MainActor func eventText(_ date: Date) -> String { string(date, Self.event) }
 
     // MARK: Formatters
     //
     // Cached once (creating a DateFormatter is expensive); the timezone is
-    // applied per call. Formatting runs on the main actor in the views.
+    // applied per call. `DateFormatter` is not thread-safe and the per-call
+    // timezone mutation makes the shared instances mutable state, so the
+    // formatting members are MainActor-isolated — every caller is a view.
 
-    private static let clock = formatter("HH:mm:ss")
-    private static let day = formatter("d MMM yyyy")
-    private static let event = formatter("d MMM HH:mm")
+    @MainActor private static let clock = formatter("HH:mm:ss")
+    @MainActor private static let day = formatter("d MMM yyyy")
+    @MainActor private static let event = formatter("d MMM HH:mm")
 
     private static func formatter(_ format: String) -> DateFormatter {
         let f = DateFormatter()
         f.dateFormat = format
         return f
     }
-    private func string(_ date: Date, _ formatter: DateFormatter) -> String {
+    @MainActor private func string(_ date: Date, _ formatter: DateFormatter) -> String {
         formatter.timeZone = timeZone
         return formatter.string(from: date)
     }

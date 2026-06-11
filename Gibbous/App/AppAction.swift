@@ -23,6 +23,10 @@ nonisolated enum AppAction: Sendable {
 
     /// Flip the popover between its skin face and its settings/about face.
     case setShowingSettings(Bool)
+
+    /// The popover became visible (true) or was dismissed (false). Drives the
+    /// recompute cadence; showing also refreshes the readout immediately.
+    case setPopoverShown(Bool)
 }
 
 typealias AppEffect = Swidux.Effect<AppAction>
