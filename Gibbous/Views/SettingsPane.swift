@@ -170,6 +170,8 @@ struct ModernSettingsView: View {
                 .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
             if let url = AboutCopy.heirloomURL {
                 Link(AboutCopy.linkLabel, destination: url)
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
                     .font(.caption.weight(.medium))
                     .pointerCursor()
             }
@@ -206,6 +208,7 @@ struct FaceCornerButton: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 24, height: 24)
                 .glassSurface(in: .circle)
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .pointerCursor()
@@ -217,6 +220,7 @@ struct FaceCornerButton: View {
 struct RetroSettingsView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.openURL) private var openURL
 
     private var palette: RetroPalette { RetroPalette.resolve(colorScheme) }
 
@@ -239,7 +243,15 @@ struct RetroSettingsView: View {
             }
             RetroGroupBox(title: "About") {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(verbatim: AboutCopy.name).font(RetroTheme.font(14))
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        if let readout = store.readout {
+                            MoonDiscView(request: MoonRenderRequest(readout: readout, style: .retro, ditherCell: 1))
+                                .frame(width: 22, height: 22)
+                                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 2 }
+                        }
+                        Text(verbatim: AboutCopy.name).font(RetroTheme.font(14))
+                        Spacer(minLength: 0)
+                    }
                     Text(AboutCopy.tagline)
                         .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
                         .fixedSize(horizontal: false, vertical: true)
@@ -252,9 +264,8 @@ struct RetroSettingsView: View {
                         .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
                         .fixedSize(horizontal: false, vertical: true)
                     if let url = AboutCopy.heirloomURL {
-                        Link(AboutCopy.linkLabel, destination: url)
-                            .font(RetroTheme.font(11))
-                            .pointerCursor()
+                        RetroPushButton(label: AboutCopy.linkLabel) { openURL(url) }
+                            .padding(.top, 2)
                     }
                     Text(AboutCopy.dedication)
                         .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
@@ -269,8 +280,8 @@ struct RetroSettingsView: View {
             RetroCornerButton(systemName: "xmark.square") {
                 store.send(.setShowingSettings(false))
             }
-            .padding(.top, 8)
-            .padding(.trailing, 14)
+            .padding(.top, 3)
+            .padding(.trailing, 9)
         }
     }
 }
@@ -290,6 +301,8 @@ struct RetroCornerButton: View {
             Image(systemName: systemName)
                 .font(.system(size: 18))
                 .foregroundStyle(palette.ink)
+                .frame(width: 28, height: 28)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .pointerCursor()
@@ -369,6 +382,7 @@ struct RetroPushButton: View {
                 .overlay {
                     RoundedRectangle(cornerRadius: 9).strokeBorder(palette.ink, lineWidth: 1)
                 }
+                .contentShape(RoundedRectangle(cornerRadius: 9))
         }
         .buttonStyle(.plain)
         .pointerCursor()
