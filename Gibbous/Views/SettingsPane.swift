@@ -26,7 +26,7 @@ enum AboutCopy {
     )
     static let dedication = LocalizedStringResource(
         "about.dedication",
-        defaultValue: "Made for KJS with Love.",
+        defaultValue: "For KJS with Love. Arrooo!",
         comment: "Personal dedication line under the tagline in the About panel. Keep \"KJS\" as-is."
     )
     static let homage = LocalizedStringResource(
