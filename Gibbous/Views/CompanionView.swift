@@ -40,8 +40,8 @@ struct CompanionView: View {
                     RetroCornerButton(systemName: "info.square") {
                         store.send(.setShowingSettings(true))
                     }
-                    .padding(.top, 8)
-                    .padding(.trailing, 14)
+                    .padding(.top, 3)
+                    .padding(.trailing, 9)
                 }
         }
     }
