@@ -1,0 +1,46 @@
+{
+  "fill-specializations" : [
+    {
+      "value" : {
+        "solid" : "display-p3:0.24989,0.28918,0.46535,1.00000"
+      }
+    },
+    {
+      "appearance" : "dark",
+      "value" : {
+        "solid" : "display-p3:0.36882,0.41758,0.61135,1.00000"
+      }
+    }
+  ],
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "Gibbous 1024.png",
+          "name" : "Gibbous 1024",
+          "position" : {
+            "scale" : 0.56,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "macOS"
+    ]
+  }
+}
