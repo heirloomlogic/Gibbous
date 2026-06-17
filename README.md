@@ -19,6 +19,13 @@ It is also three things at once:
 - **A working demo of the Heirloom Logic open‑source stack** — [AstronomyKit](https://github.com/heirloomlogic/AstronomyKit) for the ephemeris, [Swidux](https://github.com/heirloomlogic/Swidux) for state, and [Persnicket](https://github.com/heirloomlogic/Persnicket) for lint/format. If you want to see these libraries used together in something that actually ships, this is the reference.
 - **An homage to *Moontool*** — John Walker's 1988 original and Richard Knuckey's Macintosh *Moon Tool*.
 
+## Download
+
+Grab the latest signed and notarized build from the
+[**Releases**](https://github.com/heirloomlogic/Gibbous/releases) page — download the
+`.dmg`, open it, and drag Gibbous to your Applications folder. Or build it yourself
+([Build & run](#build--run)).
+
 ## Features
 
 - **Live menu‑bar glyph** — a tiny rendered Moon in the status item, updated on the clock.
