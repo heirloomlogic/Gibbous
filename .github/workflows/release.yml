@@ -16,7 +16,6 @@ jobs:
       SCHEME: Gibbous
       ARCHIVE_PATH: build/Gibbous.xcarchive
       EXPORT_PATH: build/export
-      KEYCHAIN_PATH: ${{ runner.temp }}/app-signing.keychain-db
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -27,6 +26,7 @@ jobs:
         run: |
           echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
           echo "DMG_NAME=Gibbous-${GITHUB_REF_NAME}.dmg" >> "$GITHUB_ENV"
+          echo "KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db" >> "$GITHUB_ENV"
 
       - name: Import Developer ID certificate
         env:
