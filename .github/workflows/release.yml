@@ -1,0 +1,149 @@
+name: Release
+
+on:
+  push:
+    tags:
+      # Bare semver, no "v" prefix (e.g. 1.0.0).
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    env:
+      SCHEME: Gibbous
+      ARCHIVE_PATH: build/Gibbous.xcarchive
+      EXPORT_PATH: build/export
+      KEYCHAIN_PATH: ${{ runner.temp }}/app-signing.keychain-db
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          lfs: true
+
+      - name: Set version from tag
+        run: |
+          echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          echo "DMG_NAME=Gibbous-${GITHUB_REF_NAME}.dmg" >> "$GITHUB_ENV"
+
+      - name: Import Developer ID certificate
+        env:
+          DEVELOPER_ID_CERT_P12: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
+          DEVELOPER_ID_CERT_PASSWORD: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          CERT_PATH="$RUNNER_TEMP/developer_id.p12"
+          echo "$DEVELOPER_ID_CERT_P12" | base64 --decode > "$CERT_PATH"
+
+          # Build an ephemeral keychain so we never touch the runner's defaults.
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings "$KEYCHAIN_PATH"   # no auto-lock for the job
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          security import "$CERT_PATH" -P "$DEVELOPER_ID_CERT_PASSWORD" \
+            -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          # Let codesign use the key non-interactively.
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
+
+          # Add our keychain to the search list (keep the existing ones).
+          security list-keychains -d user -s "$KEYCHAIN_PATH" \
+            $(security list-keychains -d user | sed s/\"//g)
+
+          rm -f "$CERT_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      - name: Archive
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -project Gibbous.xcodeproj \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -archivePath "$ARCHIVE_PATH" \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            DEVELOPMENT_TEAM=K23JVP3VA8
+
+      - name: Export Developer ID app
+        run: |
+          set -euo pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportOptionsPlist Scripts/ExportOptions.plist \
+            -exportPath "$EXPORT_PATH"
+
+      - name: Create DMG
+        run: |
+          set -euo pipefail
+          STAGING="$RUNNER_TEMP/dmg"
+          mkdir -p "$STAGING" build
+          cp -R "$EXPORT_PATH/Gibbous.app" "$STAGING/"
+          ln -s /Applications "$STAGING/Applications"
+          hdiutil create \
+            -volname "Gibbous" \
+            -srcfolder "$STAGING" \
+            -ov -format UDZO \
+            "build/$DMG_NAME"
+
+      - name: Notarize DMG
+        env:
+          AC_API_KEY_P8: ${{ secrets.AC_API_KEY_P8 }}
+          AC_API_KEY_ID: ${{ secrets.AC_API_KEY_ID }}
+          AC_API_ISSUER_ID: ${{ secrets.AC_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          KEY_PATH="$RUNNER_TEMP/AuthKey.p8"
+          echo "$AC_API_KEY_P8" | base64 --decode > "$KEY_PATH"
+
+          SUBMIT_OUTPUT=$(xcrun notarytool submit "build/$DMG_NAME" \
+            --key "$KEY_PATH" \
+            --key-id "$AC_API_KEY_ID" \
+            --issuer "$AC_API_ISSUER_ID" \
+            --wait --output-format json)
+          echo "$SUBMIT_OUTPUT"
+
+          STATUS=$(echo "$SUBMIT_OUTPUT" | python3 -c 'import sys, json; print(json.load(sys.stdin)["status"])')
+          if [ "$STATUS" != "Accepted" ]; then
+            echo "::error::Notarization failed with status: $STATUS"
+            SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | python3 -c 'import sys, json; print(json.load(sys.stdin)["id"])')
+            xcrun notarytool log "$SUBMISSION_ID" \
+              --key "$KEY_PATH" --key-id "$AC_API_KEY_ID" --issuer "$AC_API_ISSUER_ID" || true
+            exit 1
+          fi
+
+      - name: Staple ticket
+        run: xcrun stapler staple "build/$DMG_NAME"
+
+      - name: Verify signature and notarization
+        run: |
+          set -euo pipefail
+          xcrun stapler validate "build/$DMG_NAME"
+          hdiutil attach "build/$DMG_NAME" -mountpoint /Volumes/Gibbous -nobrowse
+          codesign --verify --deep --strict --verbose=2 /Volumes/Gibbous/Gibbous.app
+          spctl -a -vvv -t exec /Volumes/Gibbous/Gibbous.app || true
+          hdiutil detach /Volumes/Gibbous
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$VERSION" \
+            "build/$DMG_NAME" \
+            --title "Gibbous $VERSION" \
+            --generate-notes
+
+      - name: Clean up secrets
+        if: always()
+        run: |
+          security delete-keychain "$KEYCHAIN_PATH" || true
+          rm -f "$RUNNER_TEMP/AuthKey.p8" "$RUNNER_TEMP/developer_id.p12" || true

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Distribute outside the App Store, Developer ID signed + notarizable. -->
+	<key>method</key>
+	<string>developer-id</string>
+	<key>teamID</key>
+	<string>K23JVP3VA8</string>
+	<!-- Manual signing is deterministic in CI: it uses the Developer ID
+	     Application identity imported into the temporary keychain, with no
+	     dependency on a logged-in Xcode session or automatic profile fetch. -->
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>signingCertificate</key>
+	<string>Developer ID Application</string>
+</dict>
+</plist>
