@@ -44,6 +44,10 @@ private struct MoonUniforms {
     var surfaceBrightness: Float
     var surfaceContrast: Float
     var normalStrength: Float
+    var useBlueNoise: Int32
+    var targetSize: Float
+    var retroEarthshine: Float
+    var retroBlackPoint: Float
 }
 
 /// Everything the renderer needs to draw one moon.
@@ -69,6 +73,11 @@ nonisolated struct MoonRenderRequest: Equatable {
     // Retro look tuning.
     var ditherCell: Float = 1  // pixels per dither cell
     var retroGamma: Float = 0.85  // tone curve before thresholding
+    // Shadow-side reveal: a faint albedo wash lifts the highland in shadow, then
+    // the black point crushes the darker maria (and stray ambient specks) to
+    // solid black so the maria read as un-dithered dark shapes.
+    var retroEarthshine: Float = 0.07  // albedo → shadow-side highland stipple
+    var retroBlackPoint: Float = 0.04  // tones below this stay solid black
     var retroDark: SIMD4<Float> = SIMD4(0.02, 0.02, 0.03, 1)
     var retroLight: SIMD4<Float> = SIMD4(0.92, 0.93, 0.88, 1)
 }
@@ -87,6 +96,9 @@ nonisolated final class MoonRenderer {
     private let pipeline: MTLRenderPipelineState
     private let albedo: MTLTexture
     private let normal: MTLTexture
+    /// Blue-noise threshold tile for the retro dither. Optional: if it fails to
+    /// load, the shader falls back to the Bayer matrix (see `useBlueNoise`).
+    private let blueNoise: MTLTexture?
 
     init(device: MTLDevice? = MTLCreateSystemDefaultDevice()) throws {
         guard let device else { throw MoonRendererError.noMetalDevice }
@@ -108,20 +120,23 @@ nonisolated final class MoonRenderer {
         let loader = MTKTextureLoader(device: device)
         self.albedo = try MoonRenderer.loadTexture("Moon", loader: loader, bundle: bundle, srgb: true)
         self.normal = try MoonRenderer.loadTexture("MoonNormal", loader: loader, bundle: bundle, srgb: false)
+        // Optional: a missing tile just drops the retro dither back to Bayer.
+        self.blueNoise = try? MoonRenderer.loadTexture(
+            "BlueNoise", ext: "png", loader: loader, bundle: bundle, srgb: false, mipmaps: false)
     }
 
     private static func loadTexture(
-        _ name: String, loader: MTKTextureLoader,
-        bundle: Bundle, srgb: Bool
+        _ name: String, ext: String = "jpg", loader: MTKTextureLoader,
+        bundle: Bundle, srgb: Bool, mipmaps: Bool = true
     ) throws -> MTLTexture {
-        guard let url = bundle.url(forResource: name, withExtension: "jpg") else {
+        guard let url = bundle.url(forResource: name, withExtension: ext) else {
             throw MoonRendererError.textureMissing(name)
         }
         return try loader.newTexture(
             URL: url,
             options: [
                 .SRGB: srgb,
-                .generateMipmaps: true,
+                .generateMipmaps: mipmaps,
                 .textureUsage: MTLTextureUsage.shaderRead.rawValue,
                 .textureStorageMode: MTLStorageMode.private.rawValue,
             ])
@@ -149,20 +164,24 @@ nonisolated final class MoonRenderer {
             throw MoonRendererError.renderTargetFailed
         }
 
-        var uniforms = makeUniforms(request)
+        var uniforms = makeUniforms(request, pixelSize: pixelSize)
         encoder.setRenderPipelineState(pipeline)
         encoder.setFragmentBytes(&uniforms, length: MemoryLayout<MoonUniforms>.stride, index: 0)
         encoder.setFragmentTexture(albedo, index: 0)
         encoder.setFragmentTexture(normal, index: 1)
+        // Bind a placeholder when the tile is absent; the shader won't read it
+        // (useBlueNoise == 0) but Metal still requires a bound texture at index 2.
+        encoder.setFragmentTexture(blueNoise ?? albedo, index: 2)
         encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
         encoder.endEncoding()
         commandBuffer.commit()
         commandBuffer.waitUntilCompleted()
 
-        return try cgImage(from: texture)
+        // Retro is a low-res 1-bit framebuffer: keep its pixels crisp on upscale.
+        return try cgImage(from: texture, interpolate: request.look != .retro)
     }
 
-    private func makeUniforms(_ r: MoonRenderRequest) -> MoonUniforms {
+    private func makeUniforms(_ r: MoonRenderRequest, pixelSize: Int) -> MoonUniforms {
         // Sun direction from the phase angle: 0°=new (behind), 90°=first quarter
         // (lit right), 180°=full (toward viewer), 270°=third quarter (lit left).
         let phi = Float(r.phaseAngleDegrees * .pi / 180)
@@ -183,11 +202,15 @@ nonisolated final class MoonRenderer {
             roll: Float(r.rollDegrees * .pi / 180),
             surfaceBrightness: r.surfaceBrightness,
             surfaceContrast: r.surfaceContrast,
-            normalStrength: r.normalStrength
+            normalStrength: r.normalStrength,
+            useBlueNoise: blueNoise != nil ? 1 : 0,
+            targetSize: Float(pixelSize),
+            retroEarthshine: r.retroEarthshine,
+            retroBlackPoint: r.retroBlackPoint
         )
     }
 
-    private func cgImage(from texture: MTLTexture) throws -> CGImage {
+    private func cgImage(from texture: MTLTexture, interpolate: Bool = true) throws -> CGImage {
         let width = texture.width
         let height = texture.height
         let bytesPerRow = width * 4
@@ -210,7 +233,7 @@ nonisolated final class MoonRenderer {
                 width: width, height: height, bitsPerComponent: 8,
                 bitsPerPixel: 32, bytesPerRow: bytesPerRow,
                 space: colorSpace, bitmapInfo: CGBitmapInfo(rawValue: info),
-                provider: provider, decode: nil, shouldInterpolate: true,
+                provider: provider, decode: nil, shouldInterpolate: interpolate,
                 intent: .defaultIntent)
         else {
             throw MoonRendererError.imageReadbackFailed

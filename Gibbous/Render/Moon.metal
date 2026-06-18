@@ -14,6 +14,10 @@
 #include <metal_stdlib>
 using namespace metal;
 
+// Look modes — keep in sync with MoonLook in MoonRenderer.swift.
+#define LOOK_BW    1
+#define LOOK_RETRO 2
+
 struct VOut {
     float4 position [[position]];
     float2 uv;
@@ -47,12 +51,21 @@ struct MoonUniforms {
     float surfaceBrightness; // albedo gain
     float surfaceContrast;   // albedo contrast around the lunar mean
     float normalStrength;    // crater relief emphasis
+    int useBlueNoise;        // retro: 1 = blue-noise tile threshold, 0 = Bayer fallback
+    float targetSize;        // render target dimension in pixels (for cell-centre shading)
+    float retroEarthshine;   // retro: albedo wash that reveals highland in shadow
+    float retroBlackPoint;   // retro: tones below this stay solid black (maria → no dither)
 };
 
 // Linear-space mean reflectance of the lunar disc — the pivot the surface
 // contrast curve rotates around (so maria darken and highlands brighten rather
 // than the whole disc crushing to black).
 constant float kLunarMean = 0.12;
+
+// Rec. 601 luma — the perceptual weighting used for B&W and the retro dither.
+static float luma(float3 c) {
+    return dot(c, float3(0.299, 0.587, 0.114));
+}
 
 // Ordered 8×8 Bayer threshold in (0, 1), for the 1-bit retro dither.
 static float bayer8(uint2 c) {
@@ -81,30 +94,44 @@ static float3 applyLibration(float3 n, float lat, float lon) {
 fragment float4 moonFragment(VOut in [[stage_in]],
                              constant MoonUniforms &u [[buffer(0)]],
                              texture2d<float> albedoTex [[texture(0)]],
-                             texture2d<float> normalTex [[texture(1)]]) {
+                             texture2d<float> normalTex [[texture(1)]],
+                             texture2d<float> blueNoiseTex [[texture(2)]]) {
     constexpr sampler smp(coord::normalized, address::repeat,
                           filter::linear, mip_filter::linear);
-
-    float2 sp = in.uv * 2.0 - 1.0;  // centre the disc in [-1, 1]
-    sp.y = -sp.y;                   // +y up
 
     // Roll the whole picture by the axis position angle: sample the scene at the
     // de-rotated coordinate and rotate the light frame to match, so features,
     // terminator and limb darkening all turn together (phase fraction unchanged).
     float cr = cos(u.roll), sr = sin(u.roll);
-    float2 p = float2(cr * sp.x + sr * sp.y, -sr * sp.x + cr * sp.y);
 
-    float r2 = dot(p, p);
-
-    // Analytic edge coverage: feather the silhouette over ~1px instead of a hard
-    // cut, so the disc edge is anti-aliased against whatever sits behind it.
-    float r = sqrt(r2);
-    float aa = max(fwidth(r), 1e-4);
-    float coverage = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, r);
+    // The silhouette is evaluated *per pixel* so the limb stays round and
+    // anti-aliased even when the retro dither quantises shading into chunky
+    // cells (cell-resolution geometry alone gives a low-res circle a flat top
+    // and sides). Feather the edge over ~1px against whatever sits behind it.
+    float2 spPix = in.uv * 2.0 - 1.0;  // centre the disc in [-1, 1]
+    spPix.y = -spPix.y;                // +y up
+    float2 pPix = float2(cr * spPix.x + sr * spPix.y, -sr * spPix.x + cr * spPix.y);
+    float rPix = length(pPix);
+    float aa = max(fwidth(rPix), 1e-4);
+    float coverage = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, rPix);
     if (coverage <= 0.0) {
         return u.transparentOutside ? float4(0.0) : u.backgroundColor;
     }
 
+    // Shading sample point. Most looks shade per pixel and reuse the silhouette
+    // point above. Retro instead snaps to the dither-cell centre so each chunky
+    // cell resolves to a single shaded value — a faithful low-res 1-bit block —
+    // while the silhouette keeps full resolution.
+    float2 p = pPix;
+    if (u.look == LOOK_RETRO) {
+        float cell = max(1.0, u.ditherCell);
+        float2 cellCentre = (floor(in.position.xy / cell) + 0.5) * cell;
+        float2 sp = cellCentre / max(1.0, u.targetSize) * 2.0 - 1.0;
+        sp.y = -sp.y;
+        p = float2(cr * sp.x + sr * sp.y, -sr * sp.x + cr * sp.y);
+    }
+
+    float r2 = dot(p, p);
     float z = sqrt(max(0.0, 1.0 - r2));
     float3 N = float3(p.x, p.y, z);             // geometric normal, unit length
 
@@ -137,13 +164,35 @@ fragment float4 moonFragment(VOut in [[stage_in]],
 
     float3 color = albedo * lit;
 
-    if (u.look == 1) {                       // black & white
-        float lum = dot(color, float3(0.299, 0.587, 0.114));
-        color = float3(lum);
-    } else if (u.look == 2) {                // retro 1-bit ordered dither
-        float lum = dot(color, float3(0.299, 0.587, 0.114));
-        lum = pow(saturate(lum), u.retroGamma);
-        float threshold = bayer8(uint2(in.position.xy / max(1.0, u.ditherCell)));
+    if (u.look == LOOK_BW) {                  // black & white
+        color = float3(luma(color));
+    } else if (u.look == LOOK_RETRO) {        // retro 1-bit blue-noise dither
+        // Dither the moon's actual shaded luminance: that one continuous signal
+        // carries the terminator, limb darkening, maria and crater relief, so
+        // detail falls out for free. The gamma shapes the tone before threshold.
+        float lum = pow(saturate(luma(color)), u.retroGamma);
+
+        // Shadow-side differentiation. The dark side is filled by a faint
+        // albedo-driven earthshine, so the brighter highland keeps a light
+        // stipple while the darker maria reflect almost nothing. The black point
+        // then crushes everything below it to solid black: the maria fall out of
+        // the dither entirely (no dots), reading as their true dark shapes, while
+        // the highland clears it. The lit crescent is unaffected (combined via
+        // max, and its tones sit well above the black point).
+        float albedoLum = luma(albedo);
+        lum = max(lum, albedoLum * u.retroEarthshine);
+        lum = saturate((lum - u.retroBlackPoint) / max(1e-3, 1.0 - u.retroBlackPoint));
+
+        // One threshold per dither cell. Blue noise gives the grid-free, organic
+        // stipple of the 1988 tools; Bayer is the fallback if the tile is absent.
+        uint2 cell = uint2(in.position.xy / max(1.0, u.ditherCell));
+        float threshold;
+        if (u.useBlueNoise != 0) {
+            uint w = blueNoiseTex.get_width();
+            threshold = blueNoiseTex.read(uint2(cell.x % w, cell.y % w)).r;
+        } else {
+            threshold = bayer8(cell);
+        }
         float bit = lum > threshold ? 1.0 : 0.0;
         color = mix(u.retroDark.rgb, u.retroLight.rgb, bit);
     }
