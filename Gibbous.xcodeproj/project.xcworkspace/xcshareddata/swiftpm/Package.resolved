@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/heirloomlogic/Swidux",
       "state" : {
-        "revision" : "966f3ad3245c373fa8b6556b02e980ae80587255",
-        "version" : "1.4.0"
+        "revision" : "c7f1c82200497e04f3603aaa0db263e79a0f6d4b",
+        "version" : "1.5.0"
       }
     },
     {

@@ -12,12 +12,12 @@ struct CompanionView: View {
     @Environment(AppStore.self) private var store
 
     var body: some View {
-        CardFlip(flipped: store.isShowingSettings) {
+        CardCrossfade(flipped: store.isShowingSettings) {
             frontFace
         } back: {
             SettingsPane()
         }
-        .animation(.smooth(duration: 0.45), value: store.isShowingSettings)
+        .animation(.smooth(duration: 0.30), value: store.isShowingSettings)
         .animation(.smooth(duration: 0.25), value: store.displayStyle)
     }
 
@@ -72,6 +72,19 @@ extension View {
             glassEffect(in: shape)
         } else {
             background(.ultraThinMaterial, in: shape)
+        }
+    }
+
+    /// As `glassSurface(in:)`, but pins the surface to a stable identity within a
+    /// namespace so a resize re-renders the same shape in place instead of letting
+    /// the container flow geometry between untracked blobs.
+    @ViewBuilder func glassSurface(
+        in shape: some Shape, id: some Hashable & Sendable, namespace: Namespace.ID
+    ) -> some View {
+        if #available(macOS 26, *) {
+            glassEffect(in: shape).glassEffectID(id, in: namespace)
+        } else {
+            glassSurface(in: shape)
         }
     }
 }

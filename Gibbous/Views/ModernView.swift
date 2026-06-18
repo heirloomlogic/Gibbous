@@ -11,16 +11,21 @@ import SwiftUI
 
 struct ModernView: View {
     @Environment(AppStore.self) private var store
+    @Namespace private var glass
 
     var body: some View {
-        GlassStack(spacing: 12) {
-            VStack(spacing: 12) {
-                header
-                stats
-                phases
-            }
-            .padding(12)
+        // The disc and its header card share a glass container so the disc reads
+        // as a lens on the header glass; stable IDs keep the two from re-flowing
+        // into each other on resize. The stats and phases ledgers are single
+        // surfaces, so they stand alone — outside any container they can't merge
+        // with their neighbours, which is what stops the goopy morph on a layout
+        // change (the per-minute readout update, the cross-fade to settings).
+        VStack(spacing: 12) {
+            GlassStack(spacing: 12) { header }
+            stats
+            phases
         }
+        .padding(12)
         .frame(width: 300)
         .foregroundStyle(.primary)
     }
@@ -30,7 +35,7 @@ struct ModernView: View {
             HStack(spacing: 16) {
                 MoonDiscView(request: MoonRenderRequest(readout: readout, style: .modern))
                     .frame(width: 96, height: 96)
-                    .glassSurface(in: .circle)
+                    .glassSurface(in: .circle, id: "disc", namespace: glass)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(readout.phaseName).font(.headline)
                     Text(
@@ -51,7 +56,7 @@ struct ModernView: View {
                 Spacer()
             }
             .padding(16)
-            .glassSurface(in: .rect(cornerRadius: 16))
+            .glassSurface(in: .rect(cornerRadius: 16), id: "header", namespace: glass)
         } else {
             MoonUnavailableView()
                 .frame(maxWidth: .infinity, minHeight: 128)

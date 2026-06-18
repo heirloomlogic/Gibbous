@@ -506,7 +506,7 @@
 			repositoryURL = "https://github.com/heirloomlogic/Persnicket";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.1;
+				minimumVersion = 2.0.2;
 			};
 		};
 		D1B0FA1100000000000000C1 /* XCRemoteSwiftPackageReference "AstronomyKit" */ = {
@@ -522,7 +522,7 @@
 			repositoryURL = "https://github.com/heirloomlogic/Swidux";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.0;
+				minimumVersion = 1.5.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
