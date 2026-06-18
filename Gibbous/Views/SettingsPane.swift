@@ -119,8 +119,8 @@ struct ModernSettingsView: View {
             HStack(spacing: 12) {
                 Text("Skin").font(.callout).foregroundStyle(.secondary)
                 Picker("Skin", selection: skinBinding) {
-                    Text("Modern").tag(DisplayStyle.modern)
-                    Text("Retro").tag(DisplayStyle.retro)
+                    Text(verbatim: DisplayStyle.modern.displayName).tag(DisplayStyle.modern)
+                    Text(verbatim: DisplayStyle.retro.displayName).tag(DisplayStyle.retro)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -228,10 +228,10 @@ struct RetroSettingsView: View {
         VStack(alignment: .leading, spacing: 12) {
             RetroGroupBox(title: "Settings") {
                 VStack(alignment: .leading, spacing: 8) {
-                    RetroRadio(label: "Modern", selected: store.displayStyle == .modern) {
+                    RetroRadio(label: DisplayStyle.modern.displayName, selected: store.displayStyle == .modern) {
                         store.send(.setDisplayStyle(.modern))
                     }
-                    RetroRadio(label: "Retro", selected: store.displayStyle == .retro) {
+                    RetroRadio(label: DisplayStyle.retro.displayName, selected: store.displayStyle == .retro) {
                         store.send(.setDisplayStyle(.retro))
                     }
                     RetroCheckbox(label: "Phase Sounds", on: store.soundsEnabled) {
@@ -311,7 +311,7 @@ struct RetroCornerButton: View {
 
 /// A System-7 radio: an outlined ring with a filled centre when chosen.
 private struct RetroRadio: View {
-    let label: LocalizedStringResource
+    let label: String
     let selected: Bool
     let action: () -> Void
 

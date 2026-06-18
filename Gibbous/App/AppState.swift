@@ -14,6 +14,18 @@ import Foundation
 /// The 1988-vs-2026 look axis.
 nonisolated enum DisplayStyle: String, Codable, Sendable, CaseIterable {
     case modern, retro
+
+    /// User-facing label for the skin picker. `.modern` shows the current
+    /// calendar year so it always reads as "now". These are bare years, not
+    /// translatable text, so they render verbatim rather than via the catalog.
+    var displayName: String {
+        switch self {
+        case .modern:
+            return String(Calendar.current.component(.year, from: Date()))
+        case .retro:
+            return "1988"
+        }
+    }
 }
 
 @Swidux
