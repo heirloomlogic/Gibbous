@@ -86,9 +86,6 @@
     "Lunation" : {
       "comment" : "Row label for the lunation (synodic month) number, in both skins."
     },
-    "Modern" : {
-      "comment" : "Skin option: the modern 2026 dashboard."
-    },
     "Moon" : {
       "comment" : "Label for the Moon. Used both as a group-box title (the hero) and as a row label in the Distance box."
     },
@@ -198,9 +195,6 @@
           }
         }
       }
-    },
-    "Retro" : {
-      "comment" : "Skin option: the 1988 System-7 style."
     },
     "Settings" : {
       "comment" : "Title of the Retro \"Settings\" group box."
