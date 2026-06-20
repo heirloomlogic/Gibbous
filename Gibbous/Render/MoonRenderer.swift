@@ -181,11 +181,17 @@ nonisolated final class MoonRenderer {
         return try cgImage(from: texture, interpolate: request.look != .retro)
     }
 
+    /// Unit sun direction from the phase angle: 0°=new (behind, −z), 90°=first
+    /// quarter (lit right, +x), 180°=full (toward viewer, +z), 270°=third
+    /// quarter (lit left, −x). Pure math, factored out so it can be unit-tested
+    /// without a Metal device.
+    static func sunDirection(phaseAngleDegrees: Double) -> SIMD3<Float> {
+        let phi = Float(phaseAngleDegrees * .pi / 180)
+        return simd_normalize(SIMD3<Float>(sin(phi), 0, -cos(phi)))
+    }
+
     private func makeUniforms(_ r: MoonRenderRequest, pixelSize: Int) -> MoonUniforms {
-        // Sun direction from the phase angle: 0°=new (behind), 90°=first quarter
-        // (lit right), 180°=full (toward viewer), 270°=third quarter (lit left).
-        let phi = Float(r.phaseAngleDegrees * .pi / 180)
-        let sun = simd_normalize(SIMD3<Float>(sin(phi), 0, -cos(phi)))
+        let sun = Self.sunDirection(phaseAngleDegrees: r.phaseAngleDegrees)
         return MoonUniforms(
             sunDirection: sun,
             subEarthLat: Float(r.subEarthLatitudeDegrees * .pi / 180),
@@ -254,7 +260,7 @@ extension MoonRenderRequest {
     /// Build a render request from a readout and the current look. `ambient`
     /// is exposed so the menu-bar glyph can lift its dark limb without mutating
     /// the request after construction.
-    init(readout: MoonReadout, style: DisplayStyle, ditherCell: Float = 1, ambient: Float = 0.015) {
+    nonisolated init(readout: MoonReadout, style: DisplayStyle, ditherCell: Float = 1, ambient: Float = 0.015) {
         self.init(
             phaseAngleDegrees: readout.phaseAngleDegrees,
             subEarthLatitudeDegrees: readout.subEarthLatitude,

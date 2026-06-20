@@ -84,6 +84,33 @@ nonisolated extension MoonReadout {
     var moonSubtendText: String { String(format: "%.4f°", moonSubtendDegrees) }
     var sunSubtendText: String { String(format: "%.4f°", sunSubtendDegrees) }
 
+    // MARK: Captions
+    //
+    // Localized headline strings shared by both skins, so the key, wording, and
+    // translator comment live in exactly one place.
+
+    /// The caption under the phase name, e.g. "26.8% illuminated".
+    var illuminationCaption: LocalizedStringResource {
+        LocalizedStringResource(
+            "moon.illumination",
+            defaultValue: "\(illuminationText) illuminated",
+            comment: """
+                Caption under the phase name: the share of the Moon's disc currently \
+                lit, e.g. "63.2% illuminated". %@ is the already-formatted percentage.
+                """)
+    }
+
+    /// The Julian Date readout for the Time-and-Date footer, e.g. "JD 2461211.16344".
+    var julianDateCaption: LocalizedStringResource {
+        LocalizedStringResource(
+            "readout.julianDate.short",
+            defaultValue: "JD \(julianDateText)",
+            comment: """
+                Julian Date readout in the Time and Date footer. "JD" is the standard \
+                abbreviation for Julian Date; %@ is the numeric value.
+                """)
+    }
+
     // MARK: Times
 
     /// The local clock at "now", e.g. "21:58:18".

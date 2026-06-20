@@ -116,17 +116,8 @@ struct RetroView: View {
                 HStack(spacing: 8) {
                     Text(r.localDateText)
                     Spacer(minLength: 8)
-                    Text(
-                        LocalizedStringResource(
-                            "readout.julianDate.short",
-                            defaultValue: "JD \(r.julianDateText)",
-                            comment: """
-                                Julian Date readout in the Time and Date footer. "JD" is \
-                                the standard abbreviation for Julian Date; %@ is the \
-                                numeric value.
-                                """)
-                    )
-                    .foregroundStyle(palette.muted)
+                    Text(r.julianDateCaption)
+                        .foregroundStyle(palette.muted)
                     Spacer(minLength: 8)
                     Text(r.localTimeText)
                 }
@@ -147,18 +138,9 @@ struct RetroView: View {
                     VStack(spacing: 2) {
                         Text(r.phaseName)
                             .font(RetroTheme.font(14))
-                        Text(
-                            LocalizedStringResource(
-                                "moon.illumination",
-                                defaultValue: "\(r.illuminationText) illuminated",
-                                comment: """
-                                    Caption under the phase name: the share of the Moon's \
-                                    disc currently lit, e.g. "63.2% illuminated". %@ is the \
-                                    already-formatted percentage.
-                                    """)
-                        )
-                        .font(RetroTheme.font(11))
-                        .foregroundStyle(palette.muted)
+                        Text(r.illuminationCaption)
+                            .font(RetroTheme.font(11))
+                            .foregroundStyle(palette.muted)
                     }
                 }
             }
@@ -243,3 +225,13 @@ struct RetroGroupBox<Content: View>: View {
         }
     }
 }
+
+#if DEBUG
+#Preview("Retro") {
+    RetroView().environment(AppStore.preview(style: .retro))
+}
+
+#Preview("Retro — unavailable") {
+    RetroView().environment(AppStore.preview(style: .retro, readout: nil))
+}
+#endif

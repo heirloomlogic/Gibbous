@@ -32,7 +32,10 @@ struct CompanionView: View {
                     FaceCornerButton(systemName: "info") {
                         store.send(.setShowingSettings(true))
                     }
-                    .padding([.top, .trailing], 22)
+                    // Sits in the right column's first section-label band, clear of
+                    // the ledger box below it.
+                    .padding(.top, 6)
+                    .padding(.trailing, 14)
                 }
         case .retro:
             RetroView()
@@ -101,3 +104,17 @@ struct MoonUnavailableView: View {
         .foregroundStyle(.secondary)
     }
 }
+
+#if DEBUG
+#Preview("Companion — Modern") {
+    CompanionView().environment(AppStore.preview(style: .modern))
+}
+
+#Preview("Companion — Retro") {
+    CompanionView().environment(AppStore.preview(style: .retro))
+}
+
+#Preview("Companion — Settings face") {
+    CompanionView().environment(AppStore.preview(style: .modern, showingSettings: true))
+}
+#endif
