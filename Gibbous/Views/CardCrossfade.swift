@@ -54,3 +54,14 @@ struct CardCrossfade<Front: View, Back: View>: View, Animatable {
         }
     }
 }
+
+#if DEBUG
+#Preview("Card crossfade — front") {
+    CardCrossfade(flipped: false) {
+        Text(verbatim: "Front").frame(width: 220, height: 130).background(.blue.opacity(0.2))
+    } back: {
+        Text(verbatim: "Back").frame(width: 260, height: 180).background(.green.opacity(0.2))
+    }
+    .padding()
+}
+#endif

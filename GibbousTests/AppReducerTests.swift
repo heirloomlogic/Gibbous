@@ -60,6 +60,25 @@ struct AppReducerTests {
         #expect(effect != nil)  // the tick exists only to drive the recompute
     }
 
+    @Test func startClockReturnsTheClockLoopEffect() {
+        let reducer = makeReducer()
+        var state = AppState()
+        // The loop runs for the app's life, so we only assert it's wired up —
+        // running it to completion would never return.
+        #expect(reducer.reduce(state: &state, action: .startClock) != nil)
+    }
+
+    // MARK: Settings face
+
+    @Test func setShowingSettingsTogglesTheFlagWithoutAnEffect() {
+        let reducer = makeReducer()
+        var state = AppState()
+        #expect(reducer.reduce(state: &state, action: .setShowingSettings(true)) == nil)
+        #expect(state.isShowingSettings)
+        #expect(reducer.reduce(state: &state, action: .setShowingSettings(false)) == nil)
+        #expect(state.isShowingSettings == false)
+    }
+
     // MARK: Lunation-event caching
 
     final class ReuseSpy: @unchecked Sendable { var calls: [LunationEvents?] = [] }

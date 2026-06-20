@@ -10,12 +10,9 @@ struct SnapshotTests {
     static let outDir = FileManager.default.temporaryDirectory.appendingPathComponent(
         "gibbous_snapshots", isDirectory: true)
 
-    // A smoke test for the composed view pipeline (also writes reference PNGs
-    // to the temp dir for the verification checklist). Requires a GPU.
-    @Test func snapshotBothPersonalities() throws {
-        try FileManager.default.createDirectory(at: Self.outDir, withIntermediateDirectories: true)
-        RetroFont.registerBundledFonts()
-
+    /// A store wired with stub effects and (optionally) a seeded readout. Used
+    /// to drive the composed view tree without touching live preferences.
+    private func makeStore(withReadout: Bool) throws -> AppStore {
         let env = AppEnvironment(
             keyValue: InMemoryKeyValueStore(),
             timeZone: .current,
@@ -25,17 +22,44 @@ struct SnapshotTests {
             playHoot: {}
         )
         let store = AppStore.configured(environment: env)
-        store.send(.readoutUpdated(try MoonAlmanac.readout(at: Date(), timeZone: .current)))
-
-        let personalities: [(String, DisplayStyle)] = [
-            ("modern", .modern),
-            ("retro", .retro),
-        ]
-        for (name, style) in personalities {
-            store.send(.setDisplayStyle(style))
-            let image = snapshot(CompanionView().environment(store), name: "personality-\(name).png")
-            #expect(image != nil && image!.width > 100, "\(name) rendered blank")
+        if withReadout {
+            store.send(.readoutUpdated(try MoonAlmanac.readout(at: Date(), timeZone: .current)))
         }
+        return store
+    }
+
+    /// Render the composed `CompanionView` for every skin in the given state and
+    /// assert each came back non-blank (also writes reference PNGs to the temp
+    /// dir for the verification checklist). Requires a GPU.
+    private func snapshotEverySkin(
+        prefix: String, withReadout: Bool, showingSettings: Bool = false
+    ) throws {
+        try FileManager.default.createDirectory(at: Self.outDir, withIntermediateDirectories: true)
+        RetroFont.registerBundledFonts()
+        let store = try makeStore(withReadout: withReadout)
+        store.send(.setShowingSettings(showingSettings))
+
+        for style in DisplayStyle.allCases {
+            store.send(.setDisplayStyle(style))
+            let image = snapshot(CompanionView().environment(store), name: "\(prefix)-\(style.rawValue).png")
+            #expect((image?.width ?? 0) > 100, "\(style.rawValue) \(prefix) rendered blank")
+        }
+    }
+
+    // A smoke test for the composed view pipeline in its default front face.
+    @Test func snapshotBothPersonalities() throws {
+        try snapshotEverySkin(prefix: "personality", withReadout: true)
+    }
+
+    // The settings/about back face for both skins — exercises SettingsPane and
+    // its System-7 controls, which the front-face snapshot never reaches.
+    @Test func snapshotSettingsFaceForBothPersonalities() throws {
+        try snapshotEverySkin(prefix: "settings", withReadout: true, showingSettings: true)
+    }
+
+    // The "ephemeris unavailable" branch of both front faces (no readout set).
+    @Test func snapshotUnavailableStateForBothPersonalities() throws {
+        try snapshotEverySkin(prefix: "unavailable", withReadout: false)
     }
 
     @discardableResult

@@ -26,7 +26,7 @@ enum AboutCopy {
     )
     static let dedication = LocalizedStringResource(
         "about.dedication",
-        defaultValue: "For KJS with Love. Arrooo!",
+        defaultValue: "Made with love for KJS. Arrooo!",
         comment: "Personal dedication line under the tagline in the About panel. Keep \"KJS\" as-is."
     )
     static let homage = LocalizedStringResource(
@@ -47,23 +47,28 @@ enum AboutCopy {
         defaultValue: "FROM THE SAME OBSERVATORY",
         comment: "Small all-caps section header above the line about the sibling apps Fallow and Edict."
     )
-    static let observatoryBody = LocalizedStringResource(
-        "about.observatory.body",
-        defaultValue: """
-            Fallow, a companion for lunar fasting, and Edict, for choosing the \
-            right moment to act.
-            """,
+    static let observatoryFallow = LocalizedStringResource(
+        "about.observatory.fallow",
+        defaultValue: "Fallow, a companion for lunar fasting.",
         comment: """
-            Contemplative line introducing the two sibling apps. Keep the product \
-            names "Fallow" and "Edict" as-is.
+            Contemplative line introducing the sibling app Fallow, shown as its own \
+            line above the Edict line. Keep the product name "Fallow" as-is.
             """
     )
-    static let linkLabel = LocalizedStringResource(
-        "about.link",
-        defaultValue: "Coming from Heirloom Logic",
-        comment: "Label for the link to the maker. Keep \"Heirloom Logic\" as-is."
+    static let observatoryEdict = LocalizedStringResource(
+        "about.observatory.edict",
+        defaultValue: "Edict, for choosing the right moment to act.",
+        comment: """
+            Contemplative line introducing the sibling app Edict, shown as its own \
+            line below the Fallow line. Keep the product name "Edict" as-is.
+            """
     )
+    /// The maker's site, and the two sibling-app pages the Fallow/Edict lines
+    /// link to. The lines themselves are the link text now, so there's no
+    /// separate button label.
     static let heirloomURL = URL(string: "https://heirloomlogic.com/")
+    static let fallowURL = URL(string: "https://heirloomlogic.com/fallow/")
+    static let edictURL = URL(string: "https://heirloomlogic.com/edict/")
 }
 
 extension View {
@@ -74,6 +79,35 @@ extension View {
             if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
         }
     }
+
+    /// Runs the view through the retro 1-bit dither, tinted with the given
+    /// ink/paper colours. Prefers the blue-noise tile (finer, less mechanical);
+    /// falls back to the Bayer matrix if the tile can't be loaded.
+    @ViewBuilder
+    func retroDithered(scale: CGFloat, ink: Color, paper: Color) -> some View {
+        if let noise = RetroDitherNoise.image {
+            colorEffect(
+                ShaderLibrary.default.retroDitherLogoBlue(
+                    .float(scale), .float(1),
+                    .color(ink), .color(paper), .image(noise)))
+        } else {
+            colorEffect(
+                ShaderLibrary.default.retroDitherLogo(
+                    .float(scale), .float(1),
+                    .color(ink), .color(paper)))
+        }
+    }
+}
+
+/// The blue-noise threshold tile, loaded once from the app bundle so the retro
+/// HL dither (a SwiftUI `colorEffect`) can sample the same noise the moon uses.
+private enum RetroDitherNoise {
+    static let image: Image? = {
+        guard let url = Bundle.main.url(forResource: "BlueNoise", withExtension: "png"),
+            let nsImage = NSImage(contentsOf: url)
+        else { return nil }
+        return Image(nsImage: nsImage)
+    }()
 }
 
 /// Routes the back face to the personality matching the current skin.
@@ -98,6 +132,12 @@ struct ModernSettingsView: View {
             VStack(spacing: 12) {
                 controls
                 about
+                observatory
+                // Outside the glass cards, below the third section — a quiet
+                // signature line rather than a framed credit.
+                Text(AboutCopy.dedication)
+                    .font(.caption).italic().foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
             .padding(12)
         }
@@ -115,10 +155,10 @@ struct ModernSettingsView: View {
     }
 
     private var controls: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(spacing: 12) {
             HStack(spacing: 12) {
-                Text("Skin").font(.callout).foregroundStyle(.secondary)
-                Picker("Skin", selection: skinBinding) {
+                Text("Theme").font(.callout).foregroundStyle(.secondary)
+                Picker("Theme", selection: skinBinding) {
                     Text(verbatim: DisplayStyle.modern.displayName).tag(DisplayStyle.modern)
                     Text(verbatim: DisplayStyle.retro.displayName).tag(DisplayStyle.retro)
                 }
@@ -130,14 +170,14 @@ struct ModernSettingsView: View {
             Toggle(isOn: soundsBinding) {
                 Text("Phase Sounds").font(.callout).foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize()
             .pointerCursor()
             Button("Quit Gibbous") { NSApplication.shared.terminate(nil) }
                 .buttonStyle(.bordered)
                 .buttonBorderShape(.capsule)
                 .pointerCursor()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
         .padding(16)
         .glassSurface(in: .rect(cornerRadius: 16))
     }
@@ -160,30 +200,49 @@ struct ModernSettingsView: View {
             Text(AboutCopy.homage)
                 .font(.caption2).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
-
-            Divider().frame(width: 180)
-
-            Text(AboutCopy.observatoryHeader)
-                .font(.caption2.weight(.medium)).tracking(0.75).foregroundStyle(.tertiary)
-            Text(AboutCopy.observatoryBody)
-                .font(.caption2).foregroundStyle(.secondary)
-                .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
-            if let url = AboutCopy.heirloomURL {
-                Link(AboutCopy.linkLabel, destination: url)
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .font(.caption.weight(.medium))
-                    .pointerCursor()
-            }
-
-            Divider().frame(width: 180)
-
-            Text(AboutCopy.dedication)
-                .font(.caption).italic().foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .padding(.horizontal, 14).padding(.vertical, 14)
         .frame(maxWidth: .infinity)
         .glassSurface(in: .rect(cornerRadius: 16))
+    }
+
+    // The third section: the Heirloom Logic mark and the sibling apps, headed by
+    // the "FROM THE SAME OBSERVATORY" label that used to sit inside About.
+    private var observatory: some View {
+        VStack(spacing: 10) {
+            Image("HLMark")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 80)
+                .accessibilityLabel(Text(verbatim: "Heirloom Logic"))
+
+            Text(AboutCopy.observatoryHeader)
+                .font(.caption2.weight(.medium)).tracking(0.75).foregroundStyle(.tertiary)
+
+            siblingLink(AboutCopy.observatoryFallow, url: AboutCopy.fallowURL)
+            siblingLink(AboutCopy.observatoryEdict, url: AboutCopy.edictURL)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 14)
+        .frame(maxWidth: .infinity)
+        .glassSurface(in: .rect(cornerRadius: 16))
+    }
+
+    /// A sibling-app line as a subtle link — secondary text (no accent tint), so
+    /// it reads as copy first, with the pointing-hand cursor to signal it's live.
+    @ViewBuilder
+    private func siblingLink(_ text: LocalizedStringResource, url: URL?) -> some View {
+        let line = Text(text)
+            .font(.caption2)
+            .multilineTextAlignment(.center)
+        if let url {
+            Link(destination: url) { line }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .pointerCursor()
+        } else {
+            line.foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private var skinBinding: Binding<DisplayStyle> {
@@ -220,6 +279,7 @@ struct FaceCornerButton: View {
 struct RetroSettingsView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.displayScale) private var displayScale
     @Environment(\.openURL) private var openURL
 
     private var palette: RetroPalette { RetroPalette.resolve(colorScheme) }
@@ -258,20 +318,28 @@ struct RetroSettingsView: View {
                     Text(AboutCopy.homage)
                         .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text(AboutCopy.observatoryHeader)
-                        .font(RetroTheme.font(11))
-                    Text(AboutCopy.observatoryBody)
-                        .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                    if let url = AboutCopy.heirloomURL {
-                        RetroPushButton(label: AboutCopy.linkLabel) { openURL(url) }
-                            .padding(.top, 2)
-                    }
-                    Text(AboutCopy.dedication)
-                        .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
+            // The third section: the dithered Heirloom mark and the sibling apps,
+            // under the observatory header used as the group-box title.
+            RetroGroupBox(title: AboutCopy.observatoryHeader) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Image("HLMark")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 80)
+                        .retroDithered(scale: displayScale, ink: palette.ink, paper: palette.highlight)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .accessibilityLabel(Text(verbatim: "Heirloom Logic"))
+                    siblingLink(AboutCopy.observatoryFallow, url: AboutCopy.fallowURL)
+                    siblingLink(AboutCopy.observatoryEdict, url: AboutCopy.edictURL)
+                }
+            }
+            // Outside the group boxes, below the third section — the signature.
+            Text(AboutCopy.dedication)
+                .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
         .frame(width: 320)
@@ -282,6 +350,30 @@ struct RetroSettingsView: View {
             }
             .padding(.top, 3)
             .padding(.trailing, 9)
+        }
+    }
+
+    /// A sibling-app line as an underlined, tappable Chicago link — System-7 had
+    /// no hyperlinks, so the underline plus the pointing-hand cursor carry the
+    /// affordance.
+    @ViewBuilder
+    private func siblingLink(_ text: LocalizedStringResource, url: URL?) -> some View {
+        if let url {
+            Button {
+                openURL(url)
+            } label: {
+                Text(text)
+                    .font(RetroTheme.font(11))
+                    .underline()
+                    .foregroundStyle(palette.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .buttonStyle(.plain)
+            .pointerCursor()
+        } else {
+            Text(text)
+                .font(RetroTheme.font(11)).foregroundStyle(palette.muted)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -388,3 +480,13 @@ struct RetroPushButton: View {
         .pointerCursor()
     }
 }
+
+#if DEBUG
+#Preview("Settings — Modern") {
+    SettingsPane().environment(AppStore.preview(style: .modern, showingSettings: true))
+}
+
+#Preview("Settings — Retro") {
+    SettingsPane().environment(AppStore.preview(style: .retro, showingSettings: true))
+}
+#endif

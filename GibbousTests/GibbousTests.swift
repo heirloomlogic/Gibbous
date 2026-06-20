@@ -2,17 +2,39 @@
 //  GibbousTests.swift
 //  GibbousTests
 //
-//  Created by Chris Sessions on 6/3/26.
+//  End-to-end wiring of the configured store: it hydrates from the injected
+//  key-value store at construction, and dispatched actions flow through the
+//  reducer to mutate observable state.
 //
 
+import Foundation
 import Testing
 
 @testable import Gibbous
 
+@MainActor
 struct GibbousTests {
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-        // Swift Testing Documentation
-        // https://developer.apple.com/documentation/testing
+    @Test func configuredStoreHydratesFromTheInjectedPreferences() {
+        let prefs = InMemoryKeyValueStore()
+        prefs.setValue(.retro, for: .displayStyle)
+        prefs.setValue(true, for: .soundsEnabled)
+
+        let store = AppStore.stub(keyValue: prefs)
+        #expect(store.displayStyle == .retro)
+        #expect(store.soundsEnabled)
+    }
+
+    @Test func configuredStoreDefaultsWhenNoPreferencesArePersisted() {
+        let store = AppStore.stub()
+        #expect(store.displayStyle == .modern)
+        #expect(store.soundsEnabled == false)
+    }
+
+    @Test func dispatchedActionsMutateObservableState() {
+        let store = AppStore.stub()
+        store.send(.setDisplayStyle(.retro))
+        #expect(store.displayStyle == .retro)
+        store.send(.setShowingSettings(true))
+        #expect(store.isShowingSettings)
     }
 }

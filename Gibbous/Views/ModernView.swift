@@ -2,9 +2,12 @@
 //  ModernView.swift
 //  Gibbous
 //
-//  The 2026 skin: a clean dashboard with a hero moon and monospaced-digit
-//  readouts. Surfaces are Liquid Glass over the popover's own glass, so the
-//  look follows the system light/dark appearance instead of a fixed palette.
+//  The 2026 skin: a hero-left / ledger-right dashboard that mirrors Retro's
+//  information architecture in Liquid Glass. A large disc anchors the left
+//  column; the data sits in labelled glass ledgers on the right; a full-width
+//  Time-and-Date bar spans both. Surfaces are Liquid Glass over the popover's
+//  own glass, so the look follows the system light/dark appearance instead of a
+//  fixed palette.
 //
 
 import SwiftUI
@@ -13,86 +16,155 @@ struct ModernView: View {
     @Environment(AppStore.self) private var store
     @Namespace private var glass
 
+    /// Widths for the hero-left / ledger-right composition, sized so the disc
+    /// matches Retro's 208pt moon and the overall footprint sits close to Retro's.
+    /// The hero stretches to the (taller) right column's height, floating the moon
+    /// centred in its glass.
+    private enum Layout {
+        static let gap: CGFloat = 12
+        static let disc: CGFloat = 208
+        static let hero: CGFloat = disc + 32  // disc + 16pt content padding each side
+        static let rightCol: CGFloat = 320
+        static let total: CGFloat = hero + gap + rightCol
+        /// A half of the right column, for the paired Moon Age | Subtend ledgers.
+        static let half: CGFloat = (rightCol - gap) / 2
+    }
+
     var body: some View {
-        // The disc and its header card share a glass container so the disc reads
-        // as a lens on the header glass; stable IDs keep the two from re-flowing
-        // into each other on resize. The stats and phases ledgers are single
-        // surfaces, so they stand alone — outside any container they can't merge
-        // with their neighbours, which is what stops the goopy morph on a layout
-        // change (the per-minute readout update, the cross-fade to settings).
-        VStack(spacing: 12) {
-            GlassStack(spacing: 12) { header }
-            stats
-            phases
+        Group {
+            if let r = store.readout {
+                content(r)
+            } else {
+                unavailable
+            }
         }
+        .frame(width: Layout.total)
         .padding(12)
-        .frame(width: 300)
         .foregroundStyle(.primary)
     }
 
-    @ViewBuilder private var header: some View {
-        if let readout = store.readout {
-            HStack(spacing: 16) {
-                MoonDiscView(request: MoonRenderRequest(readout: readout, style: .modern))
-                    .frame(width: 96, height: 96)
+    private func content(_ r: MoonReadout) -> some View {
+        VStack(spacing: Layout.gap) {
+            HStack(alignment: .top, spacing: Layout.gap) {
+                section("Moon") { hero(r) }
+                rightColumn(r)
+            }
+            footer(r)
+        }
+    }
+
+    // MARK: Hero
+
+    /// The disc and its card share a glass container so the disc reads as a lens
+    /// on the card glass; stable IDs keep the two from re-flowing into each other
+    /// on resize (the per-minute readout update, the cross-fade to settings). The
+    /// ledgers and footer are standalone surfaces — outside any container they
+    /// can't merge with their neighbours, which is what stops the goopy morph.
+    private func hero(_ r: MoonReadout) -> some View {
+        GlassStack(spacing: 12) {
+            VStack(spacing: 12) {
+                MoonDiscView(request: MoonRenderRequest(readout: r, style: .modern))
+                    .frame(width: Layout.disc, height: Layout.disc)
                     .glassSurface(in: .circle, id: "disc", namespace: glass)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(readout.phaseName).font(.headline)
-                    Text(
-                        LocalizedStringResource(
-                            "moon.illumination",
-                            defaultValue: "\(readout.illuminationText) illuminated",
-                            comment: """
-                                Caption under the phase name: the share of the Moon's disc \
-                                currently lit, e.g. "63.2% illuminated". %@ is the \
-                                already-formatted percentage.
-                                """)
-                    )
-                    .font(.subheadline).foregroundStyle(.secondary)
-                    Text(readout.localTimeText)
-                        .font(.system(.title3, design: .rounded).monospacedDigit())
-                        .padding(.top, 2)
+                VStack(spacing: 4) {
+                    Text(r.phaseName).font(.title3.weight(.semibold))
+                    Text(r.illuminationCaption)
+                        .font(.subheadline).foregroundStyle(.secondary)
                 }
-                Spacer()
             }
             .padding(16)
-            .glassSurface(in: .rect(cornerRadius: 16), id: "header", namespace: glass)
-        } else {
-            MoonUnavailableView()
-                .frame(maxWidth: .infinity, minHeight: 128)
-                .glassSurface(in: .rect(cornerRadius: 16))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .glassSurface(in: .rect(cornerRadius: 20), id: "header", namespace: glass)
         }
+        .frame(width: Layout.hero)
+        .frame(maxHeight: .infinity)
     }
 
-    @ViewBuilder private var stats: some View {
-        if let r = store.readout {
-            VStack(spacing: 0) {
-                StatRow("Moon age", r.moonAgeText)
-                StatRow("Lunation", r.lunationText)
-                StatRow("Julian date", r.julianDateText)
-                StatRow("Moon distance", r.moonDistanceText, secondary: r.moonDistanceEarthRadiiText)
-                StatRow("Sun distance", r.sunDistanceText, secondary: r.sunDistanceAUText)
-                StatRow("Moon subtends", r.moonSubtendText)
-                StatRow("Sun subtends", r.sunSubtendText)
-                StatRow("Date", r.localDateText)
-            }
-            .padding(.vertical, 6)
-            .glassSurface(in: .rect(cornerRadius: 16))
-        }
-    }
+    // MARK: Right column
 
-    /// The current lunation's phase-event timeline — the same five events Retro
-    /// lists, in the Modern ledger style.
-    @ViewBuilder private var phases: some View {
-        if let r = store.readout {
-            VStack(spacing: 0) {
-                ForEach(r.phaseEvents) { event in
-                    StatRow(event.label, r.eventText(event.date))
+    private func rightColumn(_ r: MoonReadout) -> some View {
+        VStack(spacing: Layout.gap) {
+            section("Phases of the Moon") {
+                ledger {
+                    ForEach(r.phaseEvents) { event in
+                        StatRow(event.label, r.eventText(event.date))
+                    }
                 }
             }
+            HStack(alignment: .top, spacing: Layout.gap) {
+                section("Moon Age") {
+                    ledger {
+                        StatRow("Age", r.moonAgeText)
+                        StatRow("Lunation", r.lunationText)
+                    }
+                }
+                .frame(width: Layout.half)
+                section("Subtend") {
+                    ledger {
+                        StatRow("Moon ∅", r.moonSubtendText)
+                        StatRow("Sun ∅", r.sunSubtendText)
+                    }
+                }
+                .frame(width: Layout.half)
+            }
+            section("Distance") {
+                ledger {
+                    StatRow("Moon", r.moonDistanceText, secondary: r.moonDistanceEarthRadiiText)
+                    StatRow("Sun", r.sunDistanceText, secondary: r.sunDistanceAUText)
+                }
+            }
+        }
+        .frame(width: Layout.rightCol)
+    }
+
+    // MARK: Footer
+
+    /// A full-width bar carrying the date, Julian date, and the running clock —
+    /// Modern's take on Retro's Time-and-Date footer.
+    private func footer(_ r: MoonReadout) -> some View {
+        HStack(spacing: 12) {
+            Text(r.localDateText)
+            Spacer(minLength: 8)
+            Text(r.julianDateCaption)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 8)
+            Text(r.localTimeText)
+        }
+        .font(.system(.callout, design: .monospaced))
+        .lineLimit(1)
+        .padding(.horizontal, 16).padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        .glassSurface(in: .rect(cornerRadius: 16))
+    }
+
+    // MARK: Building blocks
+
+    /// A titled group: a small all-caps label above a glass ledger. The label band
+    /// also clears the top-right ⓘ that flips the card to settings.
+    private func section<Content: View>(
+        _ title: LocalizedStringResource, @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .textCase(.uppercase)
+                .tracking(0.6)
+                .foregroundStyle(.secondary)
+                .padding(.leading, 4)
+            content()
+        }
+    }
+
+    private func ledger<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: 0) { content() }
             .padding(.vertical, 6)
             .glassSurface(in: .rect(cornerRadius: 16))
-        }
+    }
+
+    @ViewBuilder private var unavailable: some View {
+        MoonUnavailableView()
+            .frame(maxWidth: .infinity, minHeight: 200)
+            .glassSurface(in: .rect(cornerRadius: 20))
     }
 }
 
@@ -117,8 +189,18 @@ private struct StatRow: View {
                     Text(secondary).foregroundStyle(.secondary)
                 }
             }
-            .font(.system(.callout, design: .rounded).monospacedDigit())
+            .font(.system(.callout, design: .monospaced))
         }
         .padding(.horizontal, 16).padding(.vertical, 5)
     }
 }
+
+#if DEBUG
+#Preview("Modern") {
+    ModernView().environment(AppStore.preview(style: .modern))
+}
+
+#Preview("Modern — unavailable") {
+    ModernView().environment(AppStore.preview(style: .modern, readout: nil))
+}
+#endif

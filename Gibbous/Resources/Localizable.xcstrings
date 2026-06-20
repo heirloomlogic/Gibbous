@@ -11,7 +11,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "For KJS with Love. Arrooo!"
+            "value" : "Made with love for KJS. Arrooo!"
           }
         }
       }
@@ -27,24 +27,24 @@
         }
       }
     },
-    "about.link" : {
-      "comment" : "Label for the link to the maker. Keep \"Heirloom Logic\" as-is.",
+    "about.observatory.edict" : {
+      "comment" : "Contemplative line introducing the sibling app Edict, shown as its own line below the Fallow line. Keep the product name \"Edict\" as-is.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Coming from Heirloom Logic"
+            "value" : "Edict, for choosing the right moment to act."
           }
         }
       }
     },
-    "about.observatory.body" : {
-      "comment" : "Contemplative line introducing the two sibling apps. Keep the product names \"Fallow\" and \"Edict\" as-is.",
+    "about.observatory.fallow" : {
+      "comment" : "Contemplative line introducing the sibling app Fallow, shown as its own line above the Edict line. Keep the product name \"Fallow\" as-is.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fallow, a companion for lunar fasting, and Edict, for choosing the right moment to act."
+            "value" : "Fallow, a companion for lunar fasting."
           }
         }
       }
@@ -74,14 +74,8 @@
     "Age" : {
       "comment" : "Row label for the Moon's age in the Moon Age box (Retro skin)."
     },
-    "Date" : {
-      "comment" : "Row label for the local calendar date (Modern skin)."
-    },
     "Distance" : {
       "comment" : "Title of the group box showing the distance to the Moon and Sun."
-    },
-    "Julian date" : {
-      "comment" : "Row label for the Julian Date (Modern skin)."
     },
     "Lunation" : {
       "comment" : "Row label for the lunation (synodic month) number, in both skins."
@@ -92,17 +86,8 @@
     "Moon ∅" : {
       "comment" : "Row label: the Moon's angular diameter (Retro skin). ∅ is the diameter symbol."
     },
-    "Moon age" : {
-      "comment" : "Row label for the Moon's age (Modern skin)."
-    },
     "Moon Age" : {
       "comment" : "Title of the group box showing the Moon's age and lunation number (Retro skin)."
-    },
-    "Moon distance" : {
-      "comment" : "Row label for the distance to the Moon (Modern skin)."
-    },
-    "Moon subtends" : {
-      "comment" : "Row label for the Moon's angular diameter — the angle it subtends in the sky (Modern skin)."
     },
     "Moon unavailable" : {
       "comment" : "Shown in place of the Moon disc when the ephemeris cannot be computed."
@@ -199,8 +184,8 @@
     "Settings" : {
       "comment" : "Title of the Retro \"Settings\" group box."
     },
-    "Skin" : {
-      "comment" : "Settings label and segmented-control title for choosing the visual skin (Modern or Retro)."
+    "Theme" : {
+      "comment" : "Settings label and segmented-control title for choosing the visual theme (Modern or Retro)."
     },
     "Subtend" : {
       "comment" : "Title of the group box showing the angular diameter (the subtended angle) of the Moon and Sun (Retro skin)."
@@ -210,12 +195,6 @@
     },
     "Sun ∅" : {
       "comment" : "Row label: the Sun's angular diameter (Retro skin). ∅ is the diameter symbol."
-    },
-    "Sun distance" : {
-      "comment" : "Row label for the distance to the Sun (Modern skin)."
-    },
-    "Sun subtends" : {
-      "comment" : "Row label for the Sun's angular diameter — the angle it subtends in the sky (Modern skin)."
     },
     "Time and Date" : {
       "comment" : "Title of the footer group box showing local time, date, and Julian Date."
