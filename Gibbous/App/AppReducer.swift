@@ -48,6 +48,17 @@ nonisolated struct AppReducer {
             state.soundsEnabled = value
             return persist(value, for: .soundsEnabled)
 
+        case .setLaunchAtLogin(let value):
+            state.launchAtLogin = value  // optimistic, for a snappy toggle
+            return resolveLoginItem(applying: value)
+
+        case .syncLaunchAtLogin:
+            return resolveLoginItem()
+
+        case .launchAtLoginResolved(let enabled):
+            state.launchAtLogin = enabled
+            return persist(enabled, for: .launchAtLogin)
+
         case .setShowingSettings(let value):
             state.isShowingSettings = value
             return nil
@@ -153,5 +164,18 @@ nonisolated struct AppReducer {
     private func persist<Value: Sendable>(_ value: Value, for key: KVKey<Value>) -> AppEffect {
         let store = environment.keyValue
         return { _ in store.setValue(value, for: key) }
+    }
+
+    /// Reconcile the login item with the system: optionally apply a new on/off
+    /// value (the user toggled), then re-read the actual state and resolve to it.
+    /// A failed register/unregister — or a change made in System Settings while
+    /// the app was closed — self-corrects, since we always resolve to reality.
+    private func resolveLoginItem(applying enabled: Bool? = nil) -> AppEffect {
+        let setEnabled = environment.setLoginItemEnabled
+        let isEnabled = environment.loginItemEnabled
+        return { send in
+            if let enabled { setEnabled(enabled) }
+            await send(.launchAtLoginResolved(isEnabled()))
+        }
     }
 }

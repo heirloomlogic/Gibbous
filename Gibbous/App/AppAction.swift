@@ -21,6 +21,14 @@ nonisolated enum AppAction: Sendable {
     case setDisplayStyle(DisplayStyle)
     case setSoundsEnabled(Bool)
 
+    /// The user toggled "Start at Login".
+    case setLaunchAtLogin(Bool)
+    /// Reconcile the toggle with the actual system login-item state (dispatched
+    /// once at launch — the user may have changed it in System Settings).
+    case syncLaunchAtLogin
+    /// The system login-item state settled; mirror it into state and persist it.
+    case launchAtLoginResolved(Bool)
+
     /// Flip the popover between its skin face and its settings/about face.
     case setShowingSettings(Bool)
 

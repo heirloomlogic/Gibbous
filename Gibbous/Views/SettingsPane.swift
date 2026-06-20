@@ -19,6 +19,11 @@ enum AboutCopy {
     /// The product name. A proper noun — rendered with `Text(verbatim:)` and kept
     /// out of the String Catalog so it never gets "translated".
     static let name = "Gibbous"
+    static let aboutTitle = LocalizedStringResource(
+        "about.title",
+        defaultValue: "About",
+        comment: "Title of the Retro \"About\" group box."
+    )
     static let tagline = LocalizedStringResource(
         "about.tagline",
         defaultValue: "A menu-bar moon companion for the Mac.",
@@ -33,13 +38,13 @@ enum AboutCopy {
         "about.homage",
         defaultValue: """
             An homage to Moontool by John Walker (1988) and the Macintosh Moon Tool \
-            by Richard Knuckey. Built on AstronomyKit.
+            by Richard Knuckey (1994). Built on AstronomyKit.
             """,
         comment: """
             Credit line naming the two original apps Gibbous pays tribute to and the \
-            library it is built on. Keep the names "Moontool", "Moon Tool", \
-            "John Walker", "Richard Knuckey", and "AstronomyKit" as-is; the year 1988 \
-            refers to the original Moontool.
+            library it is built on. Keep the names "Moontool", "Moon Tool", "John Walker", \
+            "Richard Knuckey", and "AstronomyKit" as-is; the year 1988 refers to the \
+            original Moontool, and the year 1994 refers to the original Moon Tool.
             """
     )
     static let observatoryHeader = LocalizedStringResource(
@@ -63,12 +68,48 @@ enum AboutCopy {
             line below the Fallow line. Keep the product name "Edict" as-is.
             """
     )
-    /// The maker's site, and the two sibling-app pages the Fallow/Edict lines
-    /// link to. The lines themselves are the link text now, so there's no
-    /// separate button label.
+    /// The maker's site (the HL mark links to it), and the two sibling-app pages
+    /// the Fallow/Edict lines link to. The lines themselves are the link text
+    /// now, so there's no separate button label.
     static let heirloomURL = URL(string: "https://heirloomlogic.com/")
     static let fallowURL = URL(string: "https://heirloomlogic.com/fallow/")
     static let edictURL = URL(string: "https://heirloomlogic.com/edict/")
+}
+
+/// Single source of truth for the settings-control copy. Both skins reference
+/// these exact strings, so the Modern and Retro faces can never drift apart on
+/// the same label.
+enum SettingsCopy {
+    static let theme = LocalizedStringResource(
+        "settings.theme",
+        defaultValue: "Theme",
+        comment: "Settings label and segmented-control title for choosing the visual theme (Modern or Retro)."
+    )
+    static let phaseSounds = LocalizedStringResource(
+        "settings.phaseSounds",
+        defaultValue: "Phase Sounds",
+        comment: "Toggle: play a short sound at the New and Full Moon."
+    )
+    static let startAtLogin = LocalizedStringResource(
+        "settings.startAtLogin",
+        defaultValue: "Start at Login",
+        comment: "Toggle: launch Gibbous automatically when the user logs in."
+    )
+    static let quitGibbous = LocalizedStringResource(
+        "settings.quitGibbous",
+        defaultValue: "Quit Gibbous",
+        comment: "Button that quits the app (Modern skin). Keep \"Gibbous\" as-is."
+    )
+    static let quit = LocalizedStringResource(
+        "settings.quit",
+        defaultValue: "Quit",
+        comment: "Button that quits the app (Retro skin)."
+    )
+    static let title = LocalizedStringResource(
+        "settings.title",
+        defaultValue: "Settings",
+        comment: "Title of the Retro \"Settings\" group box."
+    )
 }
 
 extension View {
@@ -77,6 +118,23 @@ extension View {
     func pointerCursor() -> some View {
         onHover { inside in
             if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
+        }
+    }
+
+    /// Wraps the Heirloom mark in a link to the maker's site, with the
+    /// pointing-hand cursor — both skins render the mark, so the affordance
+    /// lives in one place. The "Heirloom Logic" accessibility label rides along
+    /// either way, so the mark is still announced when there's no URL.
+    @ViewBuilder
+    func heirloomMarkLink() -> some View {
+        let label = Text(verbatim: "Heirloom Logic")
+        if let url = AboutCopy.heirloomURL {
+            Link(destination: url) { self }
+                .buttonStyle(.plain)
+                .pointerCursor()
+                .accessibilityLabel(label)
+        } else {
+            accessibilityLabel(label)
         }
     }
 
@@ -157,8 +215,8 @@ struct ModernSettingsView: View {
     private var controls: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                Text("Theme").font(.callout).foregroundStyle(.secondary)
-                Picker("Theme", selection: skinBinding) {
+                Text(SettingsCopy.theme).font(.callout).foregroundStyle(.secondary)
+                Picker(String(localized: SettingsCopy.theme), selection: skinBinding) {
                     Text(verbatim: DisplayStyle.modern.displayName).tag(DisplayStyle.modern)
                     Text(verbatim: DisplayStyle.retro.displayName).tag(DisplayStyle.retro)
                 }
@@ -168,11 +226,16 @@ struct ModernSettingsView: View {
                 .pointerCursor()
             }
             Toggle(isOn: soundsBinding) {
-                Text("Phase Sounds").font(.callout).foregroundStyle(.secondary)
+                Text(SettingsCopy.phaseSounds).font(.callout).foregroundStyle(.secondary)
             }
             .fixedSize()
             .pointerCursor()
-            Button("Quit Gibbous") { NSApplication.shared.terminate(nil) }
+            Toggle(isOn: launchAtLoginBinding) {
+                Text(SettingsCopy.startAtLogin).font(.callout).foregroundStyle(.secondary)
+            }
+            .fixedSize()
+            .pointerCursor()
+            Button(String(localized: SettingsCopy.quitGibbous)) { NSApplication.shared.terminate(nil) }
                 .buttonStyle(.bordered)
                 .buttonBorderShape(.capsule)
                 .pointerCursor()
@@ -214,7 +277,7 @@ struct ModernSettingsView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(height: 80)
-                .accessibilityLabel(Text(verbatim: "Heirloom Logic"))
+                .heirloomMarkLink()
 
             Text(AboutCopy.observatoryHeader)
                 .font(.caption2.weight(.medium)).tracking(0.75).foregroundStyle(.tertiary)
@@ -251,6 +314,9 @@ struct ModernSettingsView: View {
     private var soundsBinding: Binding<Bool> {
         Binding(get: { store.soundsEnabled }, set: { store.send(.setSoundsEnabled($0)) })
     }
+    private var launchAtLoginBinding: Binding<Bool> {
+        Binding(get: { store.launchAtLogin }, set: { store.send(.setLaunchAtLogin($0)) })
+    }
 }
 
 /// A round Liquid-Glass corner control for the Modern face: a bare glyph
@@ -286,7 +352,7 @@ struct RetroSettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            RetroGroupBox(title: "Settings") {
+            RetroGroupBox(title: SettingsCopy.title) {
                 VStack(alignment: .leading, spacing: 8) {
                     RetroRadio(label: DisplayStyle.modern.displayName, selected: store.displayStyle == .modern) {
                         store.send(.setDisplayStyle(.modern))
@@ -294,14 +360,17 @@ struct RetroSettingsView: View {
                     RetroRadio(label: DisplayStyle.retro.displayName, selected: store.displayStyle == .retro) {
                         store.send(.setDisplayStyle(.retro))
                     }
-                    RetroCheckbox(label: "Phase Sounds", on: store.soundsEnabled) {
+                    RetroCheckbox(label: SettingsCopy.phaseSounds, on: store.soundsEnabled) {
                         store.send(.setSoundsEnabled(!store.soundsEnabled))
                     }
-                    RetroPushButton(label: "Quit") { NSApplication.shared.terminate(nil) }
+                    RetroCheckbox(label: SettingsCopy.startAtLogin, on: store.launchAtLogin) {
+                        store.send(.setLaunchAtLogin(!store.launchAtLogin))
+                    }
+                    RetroPushButton(label: SettingsCopy.quit) { NSApplication.shared.terminate(nil) }
                         .padding(.top, 2)
                 }
             }
-            RetroGroupBox(title: "About") {
+            RetroGroupBox(title: AboutCopy.aboutTitle) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         if let readout = store.readout {
@@ -329,8 +398,8 @@ struct RetroSettingsView: View {
                         .scaledToFit()
                         .frame(height: 80)
                         .retroDithered(scale: displayScale, ink: palette.ink, paper: palette.highlight)
+                        .heirloomMarkLink()
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .accessibilityLabel(Text(verbatim: "Heirloom Logic"))
                     siblingLink(AboutCopy.observatoryFallow, url: AboutCopy.fallowURL)
                     siblingLink(AboutCopy.observatoryEdict, url: AboutCopy.edictURL)
                 }

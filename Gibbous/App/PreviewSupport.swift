@@ -67,7 +67,9 @@ extension AppStore {
                 now: { Date() },
                 computeReadout: { _, _, _ in .preview },
                 playHowl: {},
-                playHoot: {}
+                playHoot: {},
+                setLoginItemEnabled: { _ in },
+                loginItemEnabled: { false }
             ))
         store.send(.setDisplayStyle(style))
         if let readout { store.send(.readoutUpdated(readout)) }

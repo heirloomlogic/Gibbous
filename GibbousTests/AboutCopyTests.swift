@@ -45,4 +45,8 @@ struct AboutCopyTests {
         #expect(String(localized: AboutCopy.observatoryFallow).contains("Fallow"))
         #expect(String(localized: AboutCopy.observatoryEdict).contains("Edict"))
     }
+
+    @Test func aboutTitleResolvesToItsEnglishDefault() {
+        #expect(String(localized: AboutCopy.aboutTitle) == "About")
+    }
 }

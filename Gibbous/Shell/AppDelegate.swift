@@ -19,5 +19,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         RetroFont.registerBundledFonts()
         menuBar = MenuBarController(store: store)
         store.send(.startClock)
+        store.send(.syncLaunchAtLogin)
     }
 }

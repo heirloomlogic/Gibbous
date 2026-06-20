@@ -8,6 +8,76 @@
 
 import Foundation
 
+/// Single source of truth for the readout's static labels and group-box titles.
+/// Both skins reference these exact strings, so the Modern and Retro faces can
+/// never drift apart on the same label. (Data-derived captions — illumination,
+/// Julian Date, phase-event labels — stay computed on `MoonReadout` below.)
+enum ReadoutCopy {
+    static let phasesTitle = LocalizedStringResource(
+        "readout.phasesTitle",
+        defaultValue: "Phases of the Moon",
+        comment: "Title of the group box listing the dates of this lunation's phase events."
+    )
+    static let moonAgeTitle = LocalizedStringResource(
+        "readout.moonAgeTitle",
+        defaultValue: "Moon Age",
+        comment: "Title of the group box showing the Moon's age and lunation number (Retro skin)."
+    )
+    static let subtendTitle = LocalizedStringResource(
+        "readout.subtendTitle",
+        defaultValue: "Subtend",
+        comment: """
+            Title of the group box showing the angular diameter (the subtended angle) \
+            of the Moon and Sun (Retro skin).
+            """
+    )
+    static let distanceTitle = LocalizedStringResource(
+        "readout.distanceTitle",
+        defaultValue: "Distance",
+        comment: "Title of the group box showing the distance to the Moon and Sun."
+    )
+    static let timeAndDateTitle = LocalizedStringResource(
+        "readout.timeAndDateTitle",
+        defaultValue: "Time and Date",
+        comment: "Title of the footer group box showing local time, date, and Julian Date."
+    )
+    static let moon = LocalizedStringResource(
+        "readout.moon",
+        defaultValue: "Moon",
+        comment: "Label for the Moon. Used both as a group-box title (the hero) and as a row label in the Distance box."
+    )
+    static let sun = LocalizedStringResource(
+        "readout.sun",
+        defaultValue: "Sun",
+        comment: "Row label for the Sun in the Distance box."
+    )
+    static let age = LocalizedStringResource(
+        "readout.age",
+        defaultValue: "Age",
+        comment: "Row label for the Moon's age in the Moon Age box (Retro skin)."
+    )
+    static let lunation = LocalizedStringResource(
+        "readout.lunation",
+        defaultValue: "Lunation",
+        comment: "Row label for the lunation (synodic month) number, in both skins."
+    )
+    static let moonSubtend = LocalizedStringResource(
+        "readout.moonSubtend",
+        defaultValue: "Moon ∅",
+        comment: "Row label: the Moon's angular diameter (Retro skin). ∅ is the diameter symbol."
+    )
+    static let sunSubtend = LocalizedStringResource(
+        "readout.sunSubtend",
+        defaultValue: "Sun ∅",
+        comment: "Row label: the Sun's angular diameter (Retro skin). ∅ is the diameter symbol."
+    )
+    static let unavailable = LocalizedStringResource(
+        "readout.unavailable",
+        defaultValue: "Moon unavailable",
+        comment: "Shown in place of the Moon disc when the ephemeris cannot be computed."
+    )
+}
+
 nonisolated extension MoonReadout {
     // MARK: Lunation cache
 

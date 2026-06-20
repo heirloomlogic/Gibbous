@@ -99,7 +99,7 @@ struct MoonUnavailableView: View {
     var body: some View {
         VStack(spacing: 6) {
             Image(systemName: "moon.zzz")
-            Text("Moon unavailable").font(.caption)
+            Text(ReadoutCopy.unavailable).font(.caption)
         }
         .foregroundStyle(.secondary)
     }
