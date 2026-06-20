@@ -39,4 +39,29 @@ struct CopyLocalizationTests {
         #expect(String(localized: ReadoutCopy.sunSubtend) == "Sun ∅")
         #expect(String(localized: ReadoutCopy.unavailable) == "Moon unavailable")
     }
+
+    // The catalog now ships translations for ten languages. These force a couple
+    // of non-English locales and assert the catalog actually resolves to the
+    // translated values — a guard against a key drifting out of the catalog or a
+    // translation going missing/empty. (The English tests above only exercise the
+    // Swift `defaultValue`, which would still pass even with no catalog at all.)
+    private func localized(_ resource: LocalizedStringResource, _ identifier: String) -> String {
+        var resource = resource
+        resource.locale = Locale(identifier: identifier)
+        return String(localized: resource)
+    }
+
+    @Test func copyResolvesInGerman() {
+        #expect(localized(SettingsCopy.theme, "de") == "Design")
+        #expect(localized(SettingsCopy.title, "de") == "Einstellungen")
+        #expect(localized(SettingsCopy.quitGibbous, "de") == "Gibbous beenden")
+        #expect(localized(ReadoutCopy.distanceTitle, "de") == "Entfernung")
+        #expect(localized(ReadoutCopy.moonSubtend, "de") == "Mond ∅")
+    }
+
+    @Test func copyResolvesInJapanese() {
+        #expect(localized(ReadoutCopy.moon, "ja") == "月")
+        #expect(localized(ReadoutCopy.sun, "ja") == "太陽")
+        #expect(localized(ReadoutCopy.phasesTitle, "ja") == "月の満ち欠け")
+    }
 }
