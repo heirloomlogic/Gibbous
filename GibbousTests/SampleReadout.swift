@@ -27,7 +27,11 @@ extension AppStore {
     /// A store with stubbed effects and a fixed clock, for unit tests that drive
     /// it action-by-action. Shared so adding a field to `AppEnvironment` only
     /// touches one call site.
-    @MainActor static func stub(keyValue: InMemoryKeyValueStore = InMemoryKeyValueStore()) -> AppStore {
+    @MainActor static func stub(
+        keyValue: InMemoryKeyValueStore = InMemoryKeyValueStore(),
+        setLoginItemEnabled: @escaping @Sendable (Bool) -> Void = { _ in },
+        loginItemEnabled: @escaping @Sendable () -> Bool = { false }
+    ) -> AppStore {
         AppStore.configured(
             environment: AppEnvironment(
                 keyValue: keyValue,
@@ -35,7 +39,9 @@ extension AppStore {
                 now: { Date(timeIntervalSinceReferenceDate: 0) },
                 computeReadout: { _, _, _ in MoonReadout.sample() },
                 playHowl: {},
-                playHoot: {}
+                playHoot: {},
+                setLoginItemEnabled: setLoginItemEnabled,
+                loginItemEnabled: loginItemEnabled
             ))
     }
 }

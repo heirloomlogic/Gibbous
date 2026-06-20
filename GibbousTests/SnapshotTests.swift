@@ -19,7 +19,9 @@ struct SnapshotTests {
             now: { Date() },
             computeReadout: { date, tz, _ in try MoonAlmanac.readout(at: date, timeZone: tz) },
             playHowl: {},
-            playHoot: {}
+            playHoot: {},
+            setLoginItemEnabled: { _ in },
+            loginItemEnabled: { false }
         )
         let store = AppStore.configured(environment: env)
         if withReadout {

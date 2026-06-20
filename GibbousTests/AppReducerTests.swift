@@ -18,7 +18,9 @@ struct AppReducerTests {
 
     func makeReducer(
         playHowl: @escaping @Sendable () -> Void = {},
-        playHoot: @escaping @Sendable () -> Void = {}
+        playHoot: @escaping @Sendable () -> Void = {},
+        setLoginItemEnabled: @escaping @Sendable (Bool) -> Void = { _ in },
+        loginItemEnabled: @escaping @Sendable () -> Bool = { false }
     ) -> AppReducer {
         AppReducer(
             environment: AppEnvironment(
@@ -27,7 +29,9 @@ struct AppReducerTests {
                 now: { Date(timeIntervalSinceReferenceDate: 0) },
                 computeReadout: { _, _, _ in throw StubUnavailable() },
                 playHowl: playHowl,
-                playHoot: playHoot
+                playHoot: playHoot,
+                setLoginItemEnabled: setLoginItemEnabled,
+                loginItemEnabled: loginItemEnabled
             ))
     }
 
@@ -36,6 +40,16 @@ struct AppReducerTests {
         let noop: @MainActor @Sendable (AppAction) -> Void = { _ in }
         await effect?(noop)
     }
+
+    /// Run an effect, capturing the actions it dispatches back (for the
+    /// login-item sync flow, which resolves via a follow-up action).
+    func capture(_ effect: AppEffect?) async -> [AppAction] {
+        let box = ActionBox()
+        let send: @MainActor @Sendable (AppAction) -> Void = { box.actions.append($0) }
+        await effect?(send)
+        return box.actions
+    }
+    final class ActionBox: @unchecked Sendable { var actions: [AppAction] = [] }
 
     @Test func setDisplayStyleMutatesAndPersists() async {
         let reducer = makeReducer()
@@ -51,6 +65,65 @@ struct AppReducerTests {
         await run(reducer.reduce(state: &state, action: .setSoundsEnabled(true)))
         #expect(state.soundsEnabled)
         #expect(kv.value(.soundsEnabled) == true)
+    }
+
+    // MARK: Start at Login
+
+    /// Captures the last on/off value handed to the injected login-item closure.
+    final class LoginItemSpy: @unchecked Sendable { var lastSet: Bool? }
+
+    /// The values carried by any `.launchAtLoginResolved` actions in a capture.
+    func resolvedLaunchValues(_ actions: [AppAction]) -> [Bool] {
+        actions.compactMap {
+            if case .launchAtLoginResolved(let v) = $0 { return v }
+            return nil
+        }
+    }
+
+    @Test func setLaunchAtLoginMutatesOptimisticallyAndRegisters() async {
+        let spy = LoginItemSpy()
+        let reducer = makeReducer(setLoginItemEnabled: { spy.lastSet = $0 })
+        var state = AppState()
+        await run(reducer.reduce(state: &state, action: .setLaunchAtLogin(true)))
+        #expect(state.launchAtLogin)  // optimistic
+        #expect(spy.lastSet == true)  // register() called via the injected closure
+    }
+
+    @Test func setLaunchAtLoginOffUnregisters() async {
+        let spy = LoginItemSpy()
+        let reducer = makeReducer(setLoginItemEnabled: { spy.lastSet = $0 })
+        var state = AppState()
+        state.launchAtLogin = true
+        await run(reducer.reduce(state: &state, action: .setLaunchAtLogin(false)))
+        #expect(state.launchAtLogin == false)
+        #expect(spy.lastSet == false)
+    }
+
+    @Test func setLaunchAtLoginResolvesToTheActualSystemState() async {
+        // The toggle is optimistic, but the effect re-reads the real status and
+        // dispatches `.launchAtLoginResolved` with it — so a failed register
+        // self-corrects. Here the system reports "off" despite the on request.
+        let reducer = makeReducer(setLoginItemEnabled: { _ in }, loginItemEnabled: { false })
+        var state = AppState()
+        let dispatched = await capture(reducer.reduce(state: &state, action: .setLaunchAtLogin(true)))
+        #expect(resolvedLaunchValues(dispatched) == [false])
+    }
+
+    @Test func launchAtLoginResolvedMutatesAndPersists() async {
+        let reducer = makeReducer()
+        var state = AppState()
+        await run(reducer.reduce(state: &state, action: .launchAtLoginResolved(true)))
+        #expect(state.launchAtLogin)
+        #expect(kv.value(.launchAtLogin) == true)
+    }
+
+    @Test func syncLaunchAtLoginResolvesToTheInjectedSystemState() async {
+        // Launch reconcile: read the system status and resolve to it (the user
+        // may have toggled the login item in System Settings).
+        let reducer = makeReducer(loginItemEnabled: { true })
+        var state = AppState()
+        let dispatched = await capture(reducer.reduce(state: &state, action: .syncLaunchAtLogin))
+        #expect(resolvedLaunchValues(dispatched) == [true])
     }
 
     @Test func tickReturnsAReadoutRecomputeEffect() {
@@ -95,7 +168,9 @@ struct AppReducerTests {
                     return seed
                 },
                 playHowl: {},
-                playHoot: {}
+                playHoot: {},
+                setLoginItemEnabled: { _ in },
+                loginItemEnabled: { false }
             ))
     }
 

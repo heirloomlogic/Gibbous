@@ -9,6 +9,8 @@
 
 import AppKit
 import Foundation
+import ServiceManagement
+import os
 
 nonisolated struct AppEnvironment: Sendable {
     var keyValue: any KeyValueStore
@@ -23,6 +25,11 @@ nonisolated struct AppEnvironment: Sendable {
     var playHowl: @Sendable () -> Void
     /// Fire the new-moon cue. Wired by the shell; no-op until then.
     var playHoot: @Sendable () -> Void
+    /// Register/unregister the app as a macOS login item. Best-effort; the
+    /// reducer re-reads `loginItemEnabled` afterward so state reflects reality.
+    var setLoginItemEnabled: @Sendable (Bool) -> Void
+    /// Whether the app is currently registered to launch at login (system truth).
+    var loginItemEnabled: @Sendable () -> Bool
 
     static func live() -> AppEnvironment {
         AppEnvironment(
@@ -34,8 +41,27 @@ nonisolated struct AppEnvironment: Sendable {
                 return try MoonAlmanac.readout(at: date, timeZone: timeZone, events: events)
             },
             playHowl: playSound(named: "howl"),
-            playHoot: playSound(named: "hoot")
+            playHoot: playSound(named: "hoot"),
+            setLoginItemEnabled: setLoginItem,
+            loginItemEnabled: { SMAppService.mainApp.status == .enabled }
         )
+    }
+
+    private static let loginLog = Logger(subsystem: "com.heirloomlogic.Gibbous", category: "login-item")
+
+    /// Register or unregister the app as a login item via ServiceManagement.
+    /// Failures are logged, never fatal — the reducer reconciles state to the
+    /// actual `SMAppService.mainApp.status` afterward.
+    private static func setLoginItem(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            loginLog.error("Failed to set login item to \(enabled): \(error.localizedDescription)")
+        }
     }
 
     /// A cue that plays a bundled, licensed sound from Resources/Sounds.

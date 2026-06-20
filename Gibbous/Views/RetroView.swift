@@ -80,7 +80,7 @@ struct RetroView: View {
             HStack(alignment: .top, spacing: Layout.gap) {
                 hero(r)
                 VStack(spacing: Layout.gap) {
-                    RetroGroupBox(title: "Phases of the Moon") {
+                    RetroGroupBox(title: ReadoutCopy.phasesTitle) {
                         VStack(alignment: .leading, spacing: 4) {
                             ForEach(r.phaseEvents) { event in
                                 retroLine(event.label, r.eventText(event.date))
@@ -88,31 +88,31 @@ struct RetroView: View {
                         }
                     }
                     HStack(alignment: .top, spacing: Layout.gap) {
-                        RetroGroupBox(title: "Moon Age") {
+                        RetroGroupBox(title: ReadoutCopy.moonAgeTitle) {
                             VStack(alignment: .leading, spacing: 4) {
-                                retroLine("Age", r.moonAgeText)
-                                retroLine("Lunation", r.lunationText)
+                                retroLine(ReadoutCopy.age, r.moonAgeText)
+                                retroLine(ReadoutCopy.lunation, r.lunationText)
                             }
                         }
                         .frame(width: Layout.halfRight)
-                        RetroGroupBox(title: "Subtend") {
+                        RetroGroupBox(title: ReadoutCopy.subtendTitle) {
                             VStack(alignment: .leading, spacing: 4) {
-                                retroLine("Moon ∅", r.moonSubtendText)
-                                retroLine("Sun ∅", r.sunSubtendText)
+                                retroLine(ReadoutCopy.moonSubtend, r.moonSubtendText)
+                                retroLine(ReadoutCopy.sunSubtend, r.sunSubtendText)
                             }
                         }
                         .frame(width: Layout.halfRight)
                     }
-                    RetroGroupBox(title: "Distance") {
+                    RetroGroupBox(title: ReadoutCopy.distanceTitle) {
                         Grid(alignment: .trailing, horizontalSpacing: 12, verticalSpacing: 4) {
-                            distanceRow("Moon", r.moonDistanceText, r.moonDistanceEarthRadiiText)
-                            distanceRow("Sun", r.sunDistanceText, r.sunDistanceAUText)
+                            distanceRow(ReadoutCopy.moon, r.moonDistanceText, r.moonDistanceEarthRadiiText)
+                            distanceRow(ReadoutCopy.sun, r.sunDistanceText, r.sunDistanceAUText)
                         }
                     }
                 }
                 .frame(width: Layout.rightCol)
             }
-            RetroGroupBox(title: "Time and Date") {
+            RetroGroupBox(title: ReadoutCopy.timeAndDateTitle) {
                 HStack(spacing: 8) {
                     Text(r.localDateText)
                     Spacer(minLength: 8)
@@ -131,7 +131,7 @@ struct RetroView: View {
     /// The hero: the dithered disc with the current phase name and illumination
     /// beneath it — the readout's headline, which the disc alone can't spell out.
     private func hero(_ r: MoonReadout?) -> some View {
-        RetroGroupBox(title: "Moon", fill: true) {
+        RetroGroupBox(title: ReadoutCopy.moon, fill: true) {
             VStack(spacing: 8) {
                 moonDisc(r).frame(width: Layout.disc, height: Layout.disc)
                 if let r {

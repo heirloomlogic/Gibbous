@@ -36,6 +36,9 @@ nonisolated struct AppState: Equatable, Sendable {
     // Charm (persisted) — off by default.
     var soundsEnabled: Bool = false
 
+    // Launch (persisted) — kept in sync with the system login-item state.
+    var launchAtLogin: Bool = false
+
     // Live session state (not persisted).
     var readout: MoonReadout? = nil
     var isUnavailable: Bool = false
@@ -65,6 +68,7 @@ nonisolated extension KVKey where Value == DisplayStyle {
 }
 nonisolated extension KVKey where Value == Bool {
     static let soundsEnabled = KVKey<Bool>("soundsEnabled")
+    static let launchAtLogin = KVKey<Bool>("launchAtLogin")
 }
 
 // MARK: - Hydration
@@ -76,6 +80,7 @@ nonisolated extension AppState {
         var state = AppState()
         state.displayStyle = store.value(.displayStyle) ?? state.displayStyle
         state.soundsEnabled = store.value(.soundsEnabled) ?? state.soundsEnabled
+        state.launchAtLogin = store.value(.launchAtLogin) ?? state.launchAtLogin
         return state
     }
 }
