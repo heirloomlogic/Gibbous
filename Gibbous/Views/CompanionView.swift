@@ -17,7 +17,7 @@ struct CompanionView: View {
         } back: {
             SettingsPane()
         }
-        .animation(.smooth(duration: 0.30), value: store.isShowingSettings)
+        .animation(store.isPopoverShown ? .smooth(duration: 0.30) : nil, value: store.isShowingSettings)
         .animation(.smooth(duration: 0.25), value: store.displayStyle)
     }
 

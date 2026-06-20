@@ -43,7 +43,7 @@ nonisolated struct AppState: Equatable, Sendable {
     var readout: MoonReadout? = nil
     var isUnavailable: Bool = false
     /// Whether the popover is flipped to its settings/about face. Ephemeral —
-    /// reset to the front face each time the popover opens.
+    /// reset to the front face each time the popover closes.
     var isShowingSettings: Bool = false
     /// Whether the menu-bar popover is currently visible. Drives the recompute
     /// cadence: a live 1 s clock while shown, a coarse cadence while hidden (the

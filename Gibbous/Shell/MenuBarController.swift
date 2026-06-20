@@ -64,8 +64,7 @@ final class MenuBarController: NSObject {
         if popover.isShown {
             popover.performClose(nil)
         } else if let button = statusItem.button {
-            // Always open to the front (skin) face, never mid-flip.
-            store.send(.setShowingSettings(false))
+            // The card already sits on its front (skin) face — it's reset on close.
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             // Activate so the popover window becomes key: this makes its content
             // render in the system appearance immediately (not the default light
