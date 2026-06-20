@@ -46,7 +46,7 @@ struct ModernView: View {
     private func content(_ r: MoonReadout) -> some View {
         VStack(spacing: Layout.gap) {
             HStack(alignment: .top, spacing: Layout.gap) {
-                section("Moon") { hero(r) }
+                section(ReadoutCopy.moon) { hero(r) }
                 rightColumn(r)
             }
             footer(r)
@@ -84,7 +84,7 @@ struct ModernView: View {
 
     private func rightColumn(_ r: MoonReadout) -> some View {
         VStack(spacing: Layout.gap) {
-            section("Phases of the Moon") {
+            section(ReadoutCopy.phasesTitle) {
                 ledger {
                     ForEach(r.phaseEvents) { event in
                         StatRow(event.label, r.eventText(event.date))
@@ -92,25 +92,25 @@ struct ModernView: View {
                 }
             }
             HStack(alignment: .top, spacing: Layout.gap) {
-                section("Moon Age") {
+                section(ReadoutCopy.moonAgeTitle) {
                     ledger {
-                        StatRow("Age", r.moonAgeText)
-                        StatRow("Lunation", r.lunationText)
+                        StatRow(ReadoutCopy.age, r.moonAgeText)
+                        StatRow(ReadoutCopy.lunation, r.lunationText)
                     }
                 }
                 .frame(width: Layout.half)
-                section("Subtend") {
+                section(ReadoutCopy.subtendTitle) {
                     ledger {
-                        StatRow("Moon ∅", r.moonSubtendText)
-                        StatRow("Sun ∅", r.sunSubtendText)
+                        StatRow(ReadoutCopy.moonSubtend, r.moonSubtendText)
+                        StatRow(ReadoutCopy.sunSubtend, r.sunSubtendText)
                     }
                 }
                 .frame(width: Layout.half)
             }
-            section("Distance") {
+            section(ReadoutCopy.distanceTitle) {
                 ledger {
-                    StatRow("Moon", r.moonDistanceText, secondary: r.moonDistanceEarthRadiiText)
-                    StatRow("Sun", r.sunDistanceText, secondary: r.sunDistanceAUText)
+                    StatRow(ReadoutCopy.moon, r.moonDistanceText, secondary: r.moonDistanceEarthRadiiText)
+                    StatRow(ReadoutCopy.sun, r.sunDistanceText, secondary: r.sunDistanceAUText)
                 }
             }
         }

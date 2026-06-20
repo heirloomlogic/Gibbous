@@ -3,7 +3,6 @@
   "strings" : {
     "about.dedication" : {
       "comment" : "Personal dedication line under the tagline in the About panel. Keep \"KJS\" as-is.",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
