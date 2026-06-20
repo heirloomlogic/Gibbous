@@ -65,9 +65,14 @@ nonisolated struct AppReducer {
 
         case .setPopoverShown(let value):
             state.isPopoverShown = value
+            guard value else {
+                // Popover closed: drop back to the front face while hidden, so the
+                // next open never shows the settings face mid-dissolve.
+                state.isShowingSettings = false
+                return nil
+            }
             // Showing the popover after a throttled spell can leave the clock
             // up to one coarse interval stale — refresh immediately on open.
-            guard value else { return nil }
             return recomputeReadout(state: state, for: environment.now())
         }
     }

@@ -274,6 +274,17 @@ struct AppReducerTests {
         #expect(effect == nil)
     }
 
+    @Test func hidingPopoverResetsToTheFrontFace() {
+        // Closing on the settings face drops back to the front while hidden, so
+        // the next open never flashes the settings face mid-dissolve.
+        let reducer = makeReducer()
+        var state = AppState()
+        state.isPopoverShown = true
+        state.isShowingSettings = true
+        _ = reducer.reduce(state: &state, action: .setPopoverShown(false))
+        #expect(state.isShowingSettings == false)
+    }
+
     @Test func readoutUpdatedStoresAndClearsUnavailable() {
         let reducer = makeReducer()
         var state = AppState()
