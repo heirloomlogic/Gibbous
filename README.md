@@ -92,15 +92,27 @@ Both targets attach [Persnicket](https://github.com/heirloomlogic/Persnicket)'s 
 
 ## Build & run
 
-**Requirements:** Xcode with the Swift 6 toolchain, macOS 26.5 or later.
+**Requirements:** Xcode with the Swift 6 toolchain, macOS 26.5 or later, and [Git LFS](https://git-lfs.com) — the Moon textures, sounds, fonts, and app‑icon art are stored as Git LFS objects.
+
+Install Git LFS *before* cloning so the binary assets download with the repo:
 
 ```sh
+brew install git-lfs   # or see https://git-lfs.com
+git lfs install        # once per machine
 git clone https://github.com/heirloomlogic/Gibbous.git
 cd Gibbous
 open Gibbous.xcodeproj
 ```
 
 Xcode resolves the Swift Package dependencies (AstronomyKit, Swidux, Persnicket) automatically on first open. Press **⌘R** to run.
+
+> **Already cloned and the build fails with “Distill failed for unknown reasons” (or the Moon textures are missing)?** The binary assets are still Git LFS *pointer* files. Run `./Scripts/bootstrap.sh` to fix it, or do it by hand:
+>
+> ```sh
+> brew install git-lfs   # or see https://git-lfs.com
+> git lfs install
+> git lfs pull
+> ```
 
 Gibbous launches as a menu‑bar accessory — there is no Dock icon and no main window. Look for the Moon glyph in the status bar; left‑click it for the companion, and right‑click for the menu to switch skins, toggle phase sounds, or quit.
 
