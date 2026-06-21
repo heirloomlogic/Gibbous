@@ -11,6 +11,17 @@ Open a [bug report](https://github.com/heirloomlogic/Gibbous/issues/new?template
 - Steps to reproduce
 - Expected vs. actual behavior
 
+## Prerequisites
+
+Gibbous stores its binary assets — the Moon textures, sounds, fonts, and app‑icon art — with [Git LFS](https://git-lfs.com). Install it **before** cloning so the assets come down with the repo:
+
+```sh
+brew install git-lfs   # or see https://git-lfs.com
+git lfs install        # once per machine
+```
+
+Already cloned and seeing **“Distill failed for unknown reasons”** or missing textures at build time? The assets are still Git LFS pointer files — run `./Scripts/bootstrap.sh`, or install Git LFS as above and run `git lfs pull`.
+
 ## Submitting Changes
 
 1. Fork the repository and create a branch from `main`.
