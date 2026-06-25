@@ -20,7 +20,7 @@ struct MoonReadoutFormatTests {
         let r = SampleReadout.make()
         #expect(r.julianDateText == "2456936.41549")
         #expect(r.lunationText == "1136")
-        #expect(r.illuminationText == "26.8%")
+        #expect(r.illuminationText == "82.1%")
         #expect(r.moonAgeText == "11d 13h 44m")
         #expect(r.moonDistanceEarthRadiiText == "56.9 ER")
         #expect(r.sunDistanceAUText == "1.000 AU")
@@ -81,7 +81,8 @@ struct MoonReadoutFormatTests {
 
     @Test func captionsResolveToTheirEnglishDefaults() {
         let r = SampleReadout.make()
-        #expect(String(localized: r.illuminationCaption) == "26.8% illuminated")
+        #expect(String(localized: r.phaseName) == "Waxing Gibbous")
+        #expect(String(localized: r.illuminationCaption) == "82.1% illuminated")
         #expect(String(localized: r.julianDateCaption) == "JD 2456936.41549")
     }
 

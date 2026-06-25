@@ -39,7 +39,7 @@ struct StatusItemGlyphTests {
         try #require(MoonRenderer.shared != nil, "no Metal device")
         let r = SampleReadout.make()
         let image = StatusItemGlyph.image(for: r, style: .modern)
-        #expect(image.accessibilityDescription == r.phaseName)
+        #expect(image.accessibilityDescription == String(localized: r.phaseName))
         #expect(image.isTemplate == false)
     }
 }

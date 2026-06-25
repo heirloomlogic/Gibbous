@@ -159,7 +159,50 @@ nonisolated extension MoonReadout {
     // Localized headline strings shared by both skins, so the key, wording, and
     // translator comment live in exactly one place.
 
-    /// The caption under the phase name, e.g. "26.8% illuminated".
+    /// The hero headline: the Moon's current *visual* phase, e.g. "Waxing
+    /// Gibbous". Derived from the illuminated fraction and waxing direction (see
+    /// `MoonPhaseDescriptor`), not AstronomyKit's equal-band label — so a Moon
+    /// that is more than half lit reads "Gibbous", as the eye sees it. The
+    /// principal phases stay the dated *events* in the phase timeline above
+    /// (`phaseEvents`); this names the disc's present shape.
+    var phaseName: LocalizedStringResource {
+        switch MoonPhaseDescriptor.current(illuminatedFraction: illuminatedFraction, isWaxing: isWaxing) {
+        case .newMoon:
+            return LocalizedStringResource(
+                "phase.name.newMoon", defaultValue: "New Moon",
+                comment: "Hero headline: current phase when the disc is essentially unlit.")
+        case .waxingCrescent:
+            return LocalizedStringResource(
+                "phase.name.waxingCrescent", defaultValue: "Waxing Crescent",
+                comment: "Hero headline: current phase, less than half lit and growing.")
+        case .firstQuarter:
+            return LocalizedStringResource(
+                "phase.name.firstQuarter", defaultValue: "First Quarter",
+                comment: "Hero headline: current phase, about half lit and growing.")
+        case .waxingGibbous:
+            return LocalizedStringResource(
+                "phase.name.waxingGibbous", defaultValue: "Waxing Gibbous",
+                comment: "Hero headline: current phase, more than half lit and growing.")
+        case .fullMoon:
+            return LocalizedStringResource(
+                "phase.name.fullMoon", defaultValue: "Full Moon",
+                comment: "Hero headline: current phase when the disc is essentially fully lit.")
+        case .waningGibbous:
+            return LocalizedStringResource(
+                "phase.name.waningGibbous", defaultValue: "Waning Gibbous",
+                comment: "Hero headline: current phase, more than half lit and shrinking.")
+        case .lastQuarter:
+            return LocalizedStringResource(
+                "phase.name.lastQuarter", defaultValue: "Last Quarter",
+                comment: "Hero headline: current phase, about half lit and shrinking.")
+        case .waningCrescent:
+            return LocalizedStringResource(
+                "phase.name.waningCrescent", defaultValue: "Waning Crescent",
+                comment: "Hero headline: current phase, less than half lit and shrinking.")
+        }
+    }
+
+    /// The caption under the phase name, e.g. "82.1% illuminated".
     var illuminationCaption: LocalizedStringResource {
         LocalizedStringResource(
             "moon.illumination",

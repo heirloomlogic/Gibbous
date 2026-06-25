@@ -177,7 +177,7 @@ struct AppReducerTests {
     func lunationReadout(now: Date, lastNew: Date, nextNew: Date) -> MoonReadout {
         MoonReadout(
             now: now, timeZone: TimeZone.gmt,
-            phaseAngleDegrees: 90, illuminatedFraction: 0.5, isWaxing: true, phaseName: "First Quarter",
+            phaseAngleDegrees: 90, illuminatedFraction: 0.5, isWaxing: true,
             julianDate: 0, moonDistanceKM: 0, moonDistanceEarthRadii: 0,
             sunDistanceAU: 0, sunDistanceKM: 0, moonSubtendDegrees: 0, sunSubtendDegrees: 0,
             lunationNumber: 1, moonAge: MoonAge(days: 0, hours: 0, minutes: 0),
@@ -310,7 +310,7 @@ struct AppReducerTests {
     func fullMoonReadout(now: Date, full: Date) -> MoonReadout {
         MoonReadout(
             now: now, timeZone: TimeZone.gmt,
-            phaseAngleDegrees: 180, illuminatedFraction: 1, isWaxing: false, phaseName: "Full Moon",
+            phaseAngleDegrees: 180, illuminatedFraction: 1, isWaxing: false,
             julianDate: 0, moonDistanceKM: 0, moonDistanceEarthRadii: 0,
             sunDistanceAU: 0, sunDistanceKM: 0, moonSubtendDegrees: 0, sunSubtendDegrees: 0,
             lunationNumber: 0, moonAge: MoonAge(days: 0, hours: 0, minutes: 0),
@@ -373,7 +373,7 @@ struct AppReducerTests {
     func newMoonReadout(now: Date, lastNew: Date) -> MoonReadout {
         MoonReadout(
             now: now, timeZone: TimeZone.gmt,
-            phaseAngleDegrees: 0, illuminatedFraction: 0, isWaxing: true, phaseName: "New Moon",
+            phaseAngleDegrees: 0, illuminatedFraction: 0, isWaxing: true,
             julianDate: 0, moonDistanceKM: 0, moonDistanceEarthRadii: 0,
             sunDistanceAU: 0, sunDistanceKM: 0, moonSubtendDegrees: 0, sunSubtendDegrees: 0,
             lunationNumber: 0, moonAge: MoonAge(days: 0, hours: 0, minutes: 0),
