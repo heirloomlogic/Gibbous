@@ -32,7 +32,7 @@ enum StatusItemGlyph {
         image.isTemplate = false  // full-colour / dithered, not a tint template
         // VoiceOver: announce the live phase (the rendered glyph, unlike the SF
         // Symbol fallback, carries no inherent description).
-        image.accessibilityDescription = readout.phaseName
+        image.accessibilityDescription = String(localized: readout.phaseName)
         return image
     }
 

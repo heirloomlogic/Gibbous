@@ -25,9 +25,8 @@ extension MoonReadout {
             now: now,
             timeZone: timeZone,
             phaseAngleDegrees: 130,
-            illuminatedFraction: 0.268,
+            illuminatedFraction: 0.8214,  // consistent with the 130° gibbous disc
             isWaxing: true,
-            phaseName: "Waxing Gibbous",
             julianDate: 2_456_936.415_49,
             moonDistanceKM: 362_640,
             moonDistanceEarthRadii: 56.857,

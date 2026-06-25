@@ -62,7 +62,6 @@ nonisolated enum MoonAlmanac {
             phaseAngleDegrees: phaseAngle,
             illuminatedFraction: MoonGeometry.illuminatedFraction(phaseAngleDegrees: phaseAngle),
             isWaxing: MoonGeometry.isWaxing(phaseAngleDegrees: phaseAngle),
-            phaseName: Moon.phaseName(for: phaseAngle),
             julianDate: julianDate,
             moonDistanceKM: libration.distanceKM,
             moonDistanceEarthRadii: Derivations.moonDistanceEarthRadii(km: libration.distanceKM),

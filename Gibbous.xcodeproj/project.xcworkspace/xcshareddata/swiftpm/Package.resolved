@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/heirloomlogic/Persnicket",
       "state" : {
-        "revision" : "04fe98372469f5b84be8c74cf4b235ea53d640c8",
-        "version" : "2.0.2"
+        "revision" : "f87825b002519a55ea911e497d5a3cf60d6f1805",
+        "version" : "2.1.0"
       }
     },
     {

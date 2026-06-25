@@ -22,8 +22,6 @@ nonisolated struct MoonReadout: Equatable, Sendable {
     var illuminatedFraction: Double
     /// Whether the Moon is waxing (phase angle < 180°).
     var isWaxing: Bool
-    /// Human-readable phase name (e.g. "Waxing Gibbous").
-    var phaseName: String
 
     // MARK: Time / distance / size
     var julianDate: Double
