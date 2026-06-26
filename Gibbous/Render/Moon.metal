@@ -55,12 +55,25 @@ struct MoonUniforms {
     float targetSize;        // render target dimension in pixels (for cell-centre shading)
     float retroEarthshine;   // retro: albedo wash that reveals highland in shadow
     float retroBlackPoint;   // retro: tones below this stay solid black (maria → no dither)
+    float cavityStrength;    // crater self-shadow / ambient-occlusion emphasis
 };
 
 // Linear-space mean reflectance of the lunar disc — the pivot the surface
 // contrast curve rotates around (so maria darken and highlands brighten rather
 // than the whole disc crushing to black).
 constant float kLunarMean = 0.12;
+
+// Cavity falloff exponent: how sharply the ambient-occlusion term ramps in as the
+// surface tilts away from the geometric normal. Higher keeps flats bright and
+// confines the darkening to crater walls and rims.
+constant float kCavity = 3.0;
+
+// Half-width, in longitude, of the cropped equirectangular maps. The far side is
+// never visible, so Moon.jpg / MoonNormal.jpg are cropped to the earth-facing
+// ±105° band, and this MUST match that crop (a full-sphere map would be 180°). If
+// the textures are re-exported with a different crop, update this to match or the
+// limb will sample the wrong longitude.
+constant float kLonHalfSpan = 105.0 * M_PI_F / 180.0;
 
 // Rec. 601 luma — the perceptual weighting used for B&W and the retro dither.
 static float luma(float3 c) {
@@ -134,7 +147,9 @@ fragment float4 moonFragment(VOut in [[stage_in]],
                              texture2d<float> albedoTex [[texture(0)]],
                              texture2d<float> normalTex [[texture(1)]],
                              texture2d<float> blueNoiseTex [[texture(2)]]) {
-    constexpr sampler smp(coord::normalized, address::repeat,
+    // clamp_to_edge: the maps are cropped to the earth-facing longitude band, so
+    // longitude no longer wraps. Latitude never wrapped (poles sit at the edges).
+    constexpr sampler smp(coord::normalized, address::clamp_to_edge,
                           filter::linear, mip_filter::linear);
 
     // Roll the whole picture by the axis position angle: sample the scene at the
@@ -177,7 +192,11 @@ fragment float4 moonFragment(VOut in [[stage_in]],
     float3 Ns = applyLibration(N, u.subEarthLat, u.subEarthLon);
     float lat = asin(clamp(Ns.y, -1.0, 1.0));
     float lon = atan2(Ns.x, Ns.z);
-    float2 texUV = float2(lon / (2.0 * M_PI_F) + 0.5, 0.5 - lat / M_PI_F);
+    // Longitude spans [−kLonHalfSpan, +kLonHalfSpan] across the cropped map's
+    // width; clamp so the limb (just past the visible band at extreme libration)
+    // samples the edge texel rather than wrapping.
+    float u_x = clamp(lon / (2.0 * kLonHalfSpan) + 0.5, 0.0, 1.0);
+    float2 texUV = float2(u_x, 0.5 - lat / M_PI_F);
 
     // Sharpen with a negative mip bias so maria/crater detail survives at the
     // small (96px) Modern disc, then push brightness/contrast so it reads.
@@ -192,13 +211,21 @@ fragment float4 moonFragment(VOut in [[stage_in]],
     tn.xy *= u.normalStrength;
     float3 Np = normalize(T * tn.x + B * tn.y + N * tn.z);
 
+    // Cavity / ambient-occlusion proxy. Where the perturbed normal tilts away from
+    // the geometric normal — crater walls, rims, rille edges — the surface is
+    // partly self-shadowed no matter where the sun sits. Darkening by it makes the
+    // relief read on the near-frontally-lit gibbous face, where direct N·L shading
+    // alone washes crater detail out. Flats (Np ≈ N) stay fully lit.
+    float cavity = pow(saturate(dot(Np, N)), kCavity);
+    float ao = mix(1.0, cavity, u.cavityStrength);
+
     float3 L = normalize(u.sunDirection);
     L.xy = float2(cr * L.x - sr * L.y, sr * L.x + cr * L.y);  // rotate light with the disc
     float ndl = max(dot(Np, L), 0.0);
 
     // Limb darkening: fade toward the limb (z → 0).
     float limb = mix(1.0, z, u.limbDarkening);
-    float lit = ndl * limb + u.ambient;
+    float lit = (ndl * limb + u.ambient) * ao;
 
     float3 color = albedo * lit;
 

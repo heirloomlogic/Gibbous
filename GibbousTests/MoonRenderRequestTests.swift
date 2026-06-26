@@ -67,4 +67,32 @@ struct MoonRenderRequestTests {
         #expect(MoonLook.blackAndWhite.rawValue == 1)
         #expect(MoonLook.retro.rawValue == 2)
     }
+
+    // MARK: libration sign convention
+
+    /// The disc centre is, by definition, the sub-Earth point, so the surface
+    /// coordinate sampled there must equal the libration angle. This pins the
+    /// longitude-negation boundary (`librationRadians`): AstronomyKit reports the
+    /// sub-Earth longitude east-positive, and the maps put east on the right, so a
+    /// positive sub-Earth longitude must sample a positive (right-of-centre)
+    /// selenographic longitude — not the mirrored value the raw shader maths give.
+    /// Equivalently: +longitude exposes the east limb (right), +latitude tilts the
+    /// north pole forward (up). Tested one axis at a time: the two successive axis
+    /// rotations couple at second order off-axis, but each sign is fully pinned by
+    /// its single-axis case (and the positive cases below also cover the limb sign).
+    @Test func discCentreSamplesTheSubEarthPoint() {
+        let tol = 1e-6
+        for lat in [0.0, 5.0, -6.5, 3.0] {
+            let c = MoonRenderer.discCentreSelenographicDegrees(
+                subEarthLatitudeDegrees: lat, subEarthLongitudeDegrees: 0)
+            #expect(abs(c.latitude - lat) < tol)  // north-positive
+            #expect(abs(c.longitude) < tol)
+        }
+        for lon in [0.0, 7.0, -8.0, 4.0] {
+            let c = MoonRenderer.discCentreSelenographicDegrees(
+                subEarthLatitudeDegrees: 0, subEarthLongitudeDegrees: lon)
+            #expect(abs(c.longitude - lon) < tol)  // east-positive, not flipped
+            #expect(abs(c.latitude) < tol)
+        }
+    }
 }

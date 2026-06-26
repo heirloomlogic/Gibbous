@@ -48,6 +48,7 @@ private struct MoonUniforms {
     var targetSize: Float
     var retroEarthshine: Float
     var retroBlackPoint: Float
+    var cavityStrength: Float
 }
 
 /// Everything the renderer needs to draw one moon.
@@ -63,21 +64,24 @@ nonisolated struct MoonRenderRequest: Equatable {
     var rollDegrees: Double = 0
     /// Surface tone, tuned so maria/craters read like the Apple Weather moon
     /// rather than the physically dim ~12%-albedo disc.
-    var surfaceBrightness: Float = 2.4  // gain on the albedo
-    var surfaceContrast: Float = 1.4  // contrast around the lunar mean
-    var normalStrength: Float = 1.6  // crater relief emphasis
+    var surfaceBrightness: Float = 2.15  // gain on the albedo
+    var surfaceContrast: Float = 1.65  // contrast around the lunar mean (deepens maria)
+    var normalStrength: Float = 1.6  // crater relief emphasis (the rebuilt map carries the amplitude)
+    /// Crater self-shadow: darkens slopes that tilt away from the disc normal so
+    /// relief reads even where the sun is near-frontal (the gibbous face). 0 off.
+    var cavityStrength: Float = 0.5
     /// Transparent outside the disc (menu-bar glyph); otherwise the background
     /// colour fills the frame (modern card).
     var transparentOutside: Bool = true
     var backgroundColor: SIMD4<Float> = SIMD4(0.07, 0.07, 0.09, 1)
     // Retro look tuning.
     var ditherCell: Float = 1  // pixels per dither cell
-    var retroGamma: Float = 0.85  // tone curve before thresholding
+    var retroGamma: Float = 1.145  // tone curve before thresholding (>1 darkens midtones)
     // Shadow-side reveal: a faint albedo wash lifts the highland in shadow, then
     // the black point crushes the darker maria (and stray ambient specks) to
     // solid black so the maria read as un-dithered dark shapes.
-    var retroEarthshine: Float = 0.07  // albedo → shadow-side highland stipple
-    var retroBlackPoint: Float = 0.04  // tones below this stay solid black
+    var retroEarthshine: Float = 0.082  // albedo → shadow-side highland stipple
+    var retroBlackPoint: Float = 0.071  // tones below this stay solid black (maria → dark shapes)
     var retroDark: SIMD4<Float> = SIMD4(0.02, 0.02, 0.03, 1)
     var retroLight: SIMD4<Float> = SIMD4(0.92, 0.93, 0.88, 1)
 }
@@ -190,12 +194,50 @@ nonisolated final class MoonRenderer {
         return simd_normalize(SIMD3<Float>(sin(phi), 0, -cos(phi)))
     }
 
+    /// Libration angles in radians as the shader's `applyLibration` consumes them.
+    /// The sign convention is fixed here, at the boundary: AstronomyKit reports the
+    /// sub-Earth longitude east-positive, but the equirectangular maps put
+    /// selenographic east on the *right* and `applyLibration` samples
+    /// `atan2(Ns.x, Ns.z) = −subEarthLon` at the disc centre — so the longitude
+    /// must be negated for an east-positive point to land on the right of the disc.
+    /// Latitude needs no flip (north-positive already tilts the north pole forward).
+    static func librationRadians(
+        subEarthLatitudeDegrees lat: Double, subEarthLongitudeDegrees lon: Double
+    ) -> (lat: Float, lon: Float) {
+        (lat: Float(lat * .pi / 180), lon: Float(-lon * .pi / 180))
+    }
+
+    /// The selenographic (longitude, latitude) in degrees sampled at the centre of
+    /// the disc for a given libration — a pure Swift mirror of the Metal
+    /// `applyLibration` + texUV path. By definition the disc centre is the
+    /// sub-Earth point, so this must return `(subEarthLongitude, subEarthLatitude)`;
+    /// the test that it does pins the sign convention the shader depends on. East is
+    /// +longitude (right of the disc), north is +latitude (top).
+    static func discCentreSelenographicDegrees(
+        subEarthLatitudeDegrees lat: Double, subEarthLongitudeDegrees lon: Double
+    ) -> (longitude: Double, latitude: Double) {
+        let lib = librationRadians(subEarthLatitudeDegrees: lat, subEarthLongitudeDegrees: lon)
+        // applyLibration(N=(0,0,1), lib.lat, lib.lon), matching Moon.metal.
+        let cl = cos(-Double(lib.lon))
+        let sl = sin(-Double(lib.lon))
+        let r1 = SIMD3<Double>(sl, 0, cl)  // (cl*0 + sl*1, 0, -sl*0 + cl*1)
+        let ca = cos(-Double(lib.lat))
+        let sa = sin(-Double(lib.lat))
+        let ns = SIMD3<Double>(r1.x, ca * r1.y - sa * r1.z, sa * r1.y + ca * r1.z)
+        let latTex = asin(max(-1, min(1, ns.y))) * 180 / .pi
+        let lonTex = atan2(ns.x, ns.z) * 180 / .pi
+        return (longitude: lonTex, latitude: latTex)
+    }
+
     private func makeUniforms(_ r: MoonRenderRequest, pixelSize: Int) -> MoonUniforms {
         let sun = Self.sunDirection(phaseAngleDegrees: r.phaseAngleDegrees)
+        let lib = Self.librationRadians(
+            subEarthLatitudeDegrees: r.subEarthLatitudeDegrees,
+            subEarthLongitudeDegrees: r.subEarthLongitudeDegrees)
         return MoonUniforms(
             sunDirection: sun,
-            subEarthLat: Float(r.subEarthLatitudeDegrees * .pi / 180),
-            subEarthLon: Float(r.subEarthLongitudeDegrees * .pi / 180),
+            subEarthLat: lib.lat,
+            subEarthLon: lib.lon,
             limbDarkening: r.limbDarkening,
             ambient: r.ambient,
             look: r.look.rawValue,
@@ -212,7 +254,8 @@ nonisolated final class MoonRenderer {
             useBlueNoise: blueNoise != nil ? 1 : 0,
             targetSize: Float(pixelSize),
             retroEarthshine: r.retroEarthshine,
-            retroBlackPoint: r.retroBlackPoint
+            retroBlackPoint: r.retroBlackPoint,
+            cavityStrength: r.cavityStrength
         )
     }
 
