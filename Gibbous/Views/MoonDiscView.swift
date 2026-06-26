@@ -42,7 +42,7 @@ final class MoonDiscNSView: NSView {
     /// the limb stays round, while each ~`retroPointsPerCell`-point cell resolves
     /// to one chunky 1-bit block — the bold stipple of the 1988 tools (a 1-pixel
     /// cell on Retina would average into smooth grey).
-    static let defaultRetroPointsPerCell: CGFloat = 1.0
+    static let defaultRetroPointsPerCell: CGFloat = 0.737
     var retroPointsPerCell: CGFloat = defaultRetroPointsPerCell {
         didSet { needsDisplay = true }
     }
@@ -87,11 +87,14 @@ final class MoonDiscNSView: NSView {
 /// values here mirror the `MoonRenderRequest` defaults, so a good combination
 /// found in the canvas can be copied straight back into `MoonRenderRequest`.
 private struct RetroMoonTuningPreview: View {
+    // Start the sliders at the shipped defaults so the canvas opens on the live
+    // look (and a good combination scrubbed here is copied straight back to them).
+    private static let modelDefaults = MoonRenderRequest(phaseAngleDegrees: 0)
     @State private var phaseAngle = 40.0  // ~15% waxing crescent, like the screenshots
-    @State private var earthshine = 0.07
-    @State private var blackPoint = 0.04
-    @State private var gamma = 0.85
-    @State private var pointsPerCell = 1.0
+    @State private var earthshine = Double(Self.modelDefaults.retroEarthshine)
+    @State private var blackPoint = Double(Self.modelDefaults.retroBlackPoint)
+    @State private var gamma = Double(Self.modelDefaults.retroGamma)
+    @State private var pointsPerCell = Double(MoonDiscNSView.defaultRetroPointsPerCell)
 
     private var request: MoonRenderRequest {
         var r = MoonRenderRequest(
