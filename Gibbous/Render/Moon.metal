@@ -95,43 +95,9 @@ static float bayer8(uint2 c) {
     return (m[(c.y % 8) * 8 + (c.x % 8)] + 0.5) / 64.0;
 }
 
-// Shared 1-bit dither for the colour-effect logo shaders below: the retro moon's
-// tone curve, thresholded into ink/paper. Transparent pixels pass straight
-// through so the glyph keeps its silhouette. The two stitchable entry points
-// differ only in where `threshold` comes from (Bayer matrix vs blue-noise tile).
-static half4 retroDither(half4 color, float threshold, half4 ink, half4 paper) {
-    if (color.a < 0.01h) { return color; }              // keep transparency outside the glyph
-    float3 rgb = float3(color.rgb / max(color.a, 0.001h)); // un-premultiply before luma
-    float lum = pow(saturate(luma(rgb)), 0.85);         // same tone curve as the moon
-    float bit = lum > threshold ? 1.0 : 0.0;
-    half3 out = mix(ink.rgb, paper.rgb, half(bit));
-    return half4(out * color.a, color.a);               // re-premultiply
-}
-
-// SwiftUI `colorEffect` entry point: run an arbitrary image through the same
-// 1-bit ordered dither the retro moon uses, so the Heirloom mark reads as a
-// System-7-era graphic rather than a glossy colour logo. `scale` is the display
-// scale (so dither cells lock to the device pixel grid), `cell` is the cell size
-// in pixels, and `ink`/`paper` come from the retro palette.
-[[ stitchable ]] half4 retroDitherLogo(float2 position, half4 color,
-                                       float scale, float cell,
-                                       half4 ink, half4 paper) {
-    uint2 c = uint2(position * scale / max(1.0, cell));
-    return retroDither(color, bayer8(c), ink, paper);
-}
-
-// Blue-noise variant of the above — samples the same threshold tile the retro
-// moon uses, for a finer, less mechanical stipple than the 8×8 Bayer matrix.
-[[ stitchable ]] half4 retroDitherLogoBlue(float2 position, half4 color,
-                                           float scale, float cell,
-                                           half4 ink, half4 paper,
-                                           texture2d<half> noise) {
-    constexpr sampler noiseSampler(coord::normalized, address::repeat, filter::nearest);
-    uint2 c = uint2(position * scale / max(1.0, cell));
-    float tile = max(1.0, float(noise.get_width()));
-    float threshold = float(noise.sample(noiseSampler, (float2(c) + 0.5) / tile).r);
-    return retroDither(color, threshold, ink, paper);
-}
+// The logo's `colorEffect` dither shaders live in LogoDither.metal — their own
+// translation unit, so SwiftUI's stitchable compilation doesn't depend on this
+// file's fragment shader or file-scope state.
 
 // Rotate the surface normal so the sub-Earth point (libration) sits at the
 // disc centre before we read it off the equirectangular maps.
