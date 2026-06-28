@@ -144,10 +144,21 @@ nonisolated extension MoonReadout {
     var illuminationText: String { String(format: "%.1f%%", illuminatedFraction * 100) }
     var moonAgeText: String { "\(moonAge.days)d \(moonAge.hours)h \(moonAge.minutes)m" }
 
-    var moonDistanceText: String { distanceKMText(moonDistanceKM) }
-    var sunDistanceText: String { distanceKMText(sunDistanceKM) }
-    private func distanceKMText(_ km: Double) -> String {
-        "\(km.formatted(.number.precision(.fractionLength(0)))) km"
+    var moonDistanceText: String { distanceText(moonDistanceKM) }
+    var sunDistanceText: String { distanceText(sunDistanceKM) }
+
+    /// A distance in the system's measurement system: kilometres in metric
+    /// regions, miles in the US/UK. `.asProvided` keeps the unit we pick here and
+    /// only localizes the symbol and grouping, so the km-vs-miles choice stays a
+    /// deterministic, testable decision rather than ICU's per-usage guess.
+    func distanceText(_ km: Double, locale: Locale = .autoupdatingCurrent) -> String {
+        let metric = Measurement(value: km, unit: UnitLength.kilometers)
+        let value = locale.measurementSystem == .metric ? metric : metric.converted(to: .miles)
+        return value.formatted(
+            .measurement(
+                width: .abbreviated, usage: .asProvided,
+                numberFormatStyle: .number.precision(.fractionLength(0))
+            ).locale(locale))
     }
     var moonDistanceEarthRadiiText: String { String(format: "%.1f ER", moonDistanceEarthRadii) }
     var sunDistanceAUText: String { String(format: "%.3f AU", sunDistanceAU) }
@@ -225,33 +236,31 @@ nonisolated extension MoonReadout {
     }
 
     // MARK: Times
-
-    /// The local clock at "now", e.g. "21:58:18".
-    @MainActor var localTimeText: String { string(now, Self.clock) }
-    /// Local date at "now", e.g. "5 Oct 2014".
-    @MainActor var localDateText: String { string(now, Self.day) }
-
-    /// Format a phase-event date in the display timezone, e.g. "8 Oct 10:51".
-    @MainActor func eventText(_ date: Date) -> String { string(date, Self.event) }
-
-    // MARK: Formatters
     //
-    // Cached once (creating a DateFormatter is expensive); the timezone is
-    // applied per call. `DateFormatter` is not thread-safe and the per-call
-    // timezone mutation makes the shared instances mutable state, so the
-    // formatting members are MainActor-isolated — every caller is a view.
+    // The locale picks the hour cycle (12/24h) and field order; the readout's
+    // `timeZone` still picks the instant. `Date.FormatStyle` is a Sendable value
+    // type, so each call configures a copy with no shared mutable state — no
+    // caching and no actor isolation needed (unlike the old DateFormatter).
 
-    @MainActor private static let clock = formatter("HH:mm:ss")
-    @MainActor private static let day = formatter("d MMM yyyy")
-    @MainActor private static let event = formatter("d MMM HH:mm")
+    /// The local clock at "now", e.g. "21:58:18" or "9:58:18 PM".
+    var localTimeText: String { timeText(now) }
+    /// Local date at "now", e.g. "5 Oct 2014" or "Oct 5, 2014".
+    var localDateText: String { dateText(now) }
 
-    private static func formatter(_ format: String) -> DateFormatter {
-        let f = DateFormatter()
-        f.dateFormat = format
-        return f
+    func timeText(_ date: Date, locale: Locale = .autoupdatingCurrent) -> String {
+        formatted(date, .dateTime.hour().minute().second(), locale)
     }
-    @MainActor private func string(_ date: Date, _ formatter: DateFormatter) -> String {
-        formatter.timeZone = timeZone
-        return formatter.string(from: date)
+    func dateText(_ date: Date, locale: Locale = .autoupdatingCurrent) -> String {
+        formatted(date, .dateTime.day().month(.abbreviated).year(), locale)
+    }
+    /// A phase-event date in the display timezone, e.g. "8 Oct 10:51".
+    func eventText(_ date: Date, locale: Locale = .autoupdatingCurrent) -> String {
+        formatted(date, .dateTime.day().month(.abbreviated).hour().minute(), locale)
+    }
+    private func formatted(_ date: Date, _ style: Date.FormatStyle, _ locale: Locale) -> String {
+        var style = style
+        style.timeZone = timeZone
+        style.locale = locale
+        return date.formatted(style)
     }
 }
