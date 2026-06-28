@@ -38,43 +38,77 @@ struct MoonReadoutFormatTests {
         #expect(r.illuminationText == "0.0%")
     }
 
-    @Test func distanceTextCarriesTheKilometreUnitAndDigits() {
+    // MARK: Distance (locale measurement system: km vs miles)
+
+    @Test func distanceUsesKilometresInAMetricRegion() {
         let r = SampleReadout.make()
-        // Grouping separators are locale-dependent, so assert the unit suffix
-        // and that the digits round-trip rather than the exact punctuation.
-        #expect(r.moonDistanceText.hasSuffix(" km"))
-        #expect(r.sunDistanceText.hasSuffix(" km"))
-        #expect(r.moonDistanceText.filter(\.isNumber) == "362640")
-        #expect(r.sunDistanceText.filter(\.isNumber) == "149599212")
+        let german = Locale(identifier: "de_DE")
+        let moon = r.distanceText(r.moonDistanceKM, locale: german)
+        let sun = r.distanceText(r.sunDistanceKM, locale: german)
+        // Grouping separators are locale-dependent, so assert the unit symbol and
+        // that the digits round-trip rather than the exact punctuation.
+        #expect(moon.contains("km"))
+        #expect(sun.contains("km"))
+        #expect(moon.filter(\.isNumber) == "362640")
+        #expect(sun.filter(\.isNumber) == "149599212")
     }
 
-    // MARK: Times (timezone applied per call)
+    @Test func distanceConvertsToMilesInTheUSRegion() {
+        let r = SampleReadout.make()
+        let us = Locale(identifier: "en_US")
+        let moon = r.distanceText(r.moonDistanceKM, locale: us)
+        #expect(moon.contains("mi"))
+        #expect(!moon.contains("km"))
+        // The kilometre figure was actually converted, not just relabelled.
+        let miles = Measurement(value: r.moonDistanceKM, unit: UnitLength.kilometers)
+            .converted(to: .miles).value
+        let shown = Double(moon.filter(\.isNumber)) ?? 0
+        #expect(shown != 362_640)
+        #expect(abs(shown - miles) < 2)  // displayed value rounds the conversion
+    }
 
-    @MainActor @Test func localTimeUsesTheReadoutTimeZone() {
+    // MARK: Times (timezone applied per call, locale hour cycle)
+
+    @Test func localTimeUsesA24HourClockInABritishRegion() {
         let r = SampleReadout.make()  // GMT
-        #expect(r.localTimeText == "21:58:18")
+        #expect(r.timeText(r.now, locale: Locale(identifier: "en_GB")) == "21:58:18")
     }
 
-    @MainActor @Test func localTimeShiftsWithTheTimeZone() throws {
+    @Test func localTimeUsesA12HourClockInTheUSRegion() {
+        let r = SampleReadout.make()  // GMT
+        let text = r.timeText(r.now, locale: Locale(identifier: "en_US"))
+        #expect(text.contains("9:58:18"))
+        #expect(text.contains("PM"))
+        #expect(!text.contains("21:58:18"))
+    }
+
+    @Test func localTimeShiftsWithTheTimeZone() throws {
         let eastern = try #require(TimeZone(identifier: "America/New_York"))
         let r = SampleReadout.make(timeZone: eastern)
-        // 21:58:18 UTC is 17:58:18 EDT on 2014-10-05.
-        #expect(r.localTimeText == "17:58:18")
+        // 21:58:18 UTC is 17:58:18 EDT on 2014-10-05; en_GB keeps a 24-hour clock.
+        #expect(r.timeText(r.now, locale: Locale(identifier: "en_GB")) == "17:58:18")
     }
 
-    @MainActor @Test func dateAndEventTextMatchAReferenceFormatter() {
+    @Test func dateAndEventFollowLocaleFieldOrder() {
         let r = SampleReadout.make()
-        #expect(r.localDateText == reference("d MMM yyyy", r.now))
-        #expect(r.eventText(r.fullMoon) == reference("d MMM HH:mm", r.fullMoon))
-        // Sanity: the date string is not the time string (distinct formatters).
-        #expect(r.localDateText != r.localTimeText)
+        let us = Locale(identifier: "en_US")
+        let gb = Locale(identifier: "en_GB")
+        let date: Date.FormatStyle = .dateTime.day().month(.abbreviated).year()
+        let event: Date.FormatStyle = .dateTime.day().month(.abbreviated).hour().minute()
+        #expect(r.dateText(r.now, locale: us) == reference(date, r.now, us))
+        #expect(r.dateText(r.now, locale: gb) == reference(date, r.now, gb))
+        #expect(r.eventText(r.fullMoon, locale: us) == reference(event, r.fullMoon, us))
+        #expect(r.eventText(r.fullMoon, locale: gb) == reference(event, r.fullMoon, gb))
+        // The two regions order the fields differently (US: "Oct 5, 2014",
+        // GB: "5 Oct 2014"), proving the order follows the locale.
+        #expect(r.dateText(r.now, locale: us) != r.dateText(r.now, locale: gb))
     }
 
-    private func reference(_ format: String, _ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = format
-        f.timeZone = .gmt
-        return f.string(from: date)
+    private func reference(_ style: Date.FormatStyle, _ date: Date, _ locale: Locale) -> String {
+        var s = style
+        s.timeZone = .gmt
+        s.locale = locale
+        return date.formatted(s)
     }
 
     // MARK: Captions (localized, default English)
