@@ -55,4 +55,10 @@ nonisolated struct MoonReadout: Equatable, Sendable {
     /// — the disc's apparent roll (how far the pole leans from straight-up). This
     /// is the dominant part of the libration "rock" seen as the lunation advances.
     var axisPositionAngleDegrees: Double = 0
+
+    // MARK: Special full moon
+    /// The full moon's formal special-moon name (blue / harvest / hunter / super),
+    /// or `nil`. Fixed for the lunation; surfaced in the headline only while the
+    /// disc actually reads as full (see `phaseHeadline`).
+    var specialFullMoon: SpecialFullMoonKind? = nil
 }

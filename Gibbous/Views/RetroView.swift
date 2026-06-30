@@ -136,7 +136,7 @@ struct RetroView: View {
                 moonDisc(r).frame(width: Layout.disc, height: Layout.disc)
                 if let r {
                     VStack(spacing: 2) {
-                        Text(r.phaseName)
+                        Text(r.phaseHeadline)
                             .font(RetroTheme.font(14))
                         Text(r.illuminationCaption)
                             .font(RetroTheme.font(11))
