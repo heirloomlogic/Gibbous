@@ -37,7 +37,7 @@ nonisolated struct AppEnvironment: Sendable {
             timeZone: .current,
             now: { Date() },
             computeReadout: { date, timeZone, reuse in
-                let events = try reuse ?? MoonAlmanac.lunationEvents(containing: date)
+                let events = try reuse ?? MoonAlmanac.lunationEvents(containing: date, timeZone: timeZone)
                 return try MoonAlmanac.readout(at: date, timeZone: timeZone, events: events)
             },
             playHowl: playSound(named: "howl"),

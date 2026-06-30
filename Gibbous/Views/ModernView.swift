@@ -67,7 +67,7 @@ struct ModernView: View {
                     .frame(width: Layout.disc, height: Layout.disc)
                     .glassSurface(in: .circle, id: "disc", namespace: glass)
                 VStack(spacing: 4) {
-                    Text(r.phaseName).font(.title3.weight(.semibold))
+                    Text(r.phaseHeadline).font(.title3.weight(.semibold))
                     Text(r.illuminationCaption)
                         .font(.subheadline).foregroundStyle(.secondary)
                 }

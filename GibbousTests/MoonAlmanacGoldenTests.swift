@@ -98,7 +98,7 @@ import Testing
     // MARK: Lunation-event caching (the split is behavior-preserving)
 
     @Test func lunationEventsMatchTheReadoutTimeline() throws {
-        let events = try MoonAlmanac.lunationEvents(containing: Self.instant)
+        let events = try MoonAlmanac.lunationEvents(containing: Self.instant, timeZone: Self.nz)
         let r = try readout()
         #expect(events.lastNewMoon == r.lastNewMoon)
         #expect(events.firstQuarter == r.firstQuarter)
@@ -115,7 +115,7 @@ import Testing
         // A later instant in the same lunation: reusing the cached events must
         // produce the same readout as recomputing from scratch.
         let later = Self.instant.addingTimeInterval(3_600)
-        let events = try MoonAlmanac.lunationEvents(containing: Self.instant)
+        let events = try MoonAlmanac.lunationEvents(containing: Self.instant, timeZone: Self.nz)
         let reused = try MoonAlmanac.readout(at: later, timeZone: Self.nz, events: events)
         let fresh = try MoonAlmanac.readout(at: later, timeZone: Self.nz)
         #expect(reused == fresh)

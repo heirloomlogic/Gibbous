@@ -86,7 +86,8 @@ nonisolated extension MoonReadout {
     var lunationEvents: LunationEvents {
         LunationEvents(
             lastNewMoon: lastNewMoon, firstQuarter: firstQuarter, fullMoon: fullMoon,
-            lastQuarter: lastQuarter, nextNewMoon: nextNewMoon, lunationNumber: lunationNumber)
+            lastQuarter: lastQuarter, nextNewMoon: nextNewMoon, lunationNumber: lunationNumber,
+            specialFullMoon: specialFullMoon)
     }
 
     /// Whether `date` still falls in this readout's lunation, so its cached
@@ -211,6 +212,29 @@ nonisolated extension MoonReadout {
                 "phase.name.waningCrescent", defaultValue: "Waning Crescent",
                 comment: "Hero headline: current phase, less than half lit and shrinking.")
         }
+    }
+
+    /// The hero headline shown by both skins. Normally just `phaseName`, but when
+    /// the disc actually reads as full *and* this lunation's full moon has a
+    /// formal special name, it appends that name in parentheses — e.g. "Full Moon
+    /// (Blue Moon)". The qualifier is gated on the *visual* full phase so it shows
+    /// for the couple of days the Moon looks full, not the whole lunation.
+    var phaseHeadline: LocalizedStringResource {
+        let descriptor = MoonPhaseDescriptor.current(
+            illuminatedFraction: illuminatedFraction, isWaxing: isWaxing)
+        guard descriptor == .fullMoon, let kind = specialFullMoon else { return phaseName }
+        // Resolve both pieces to strings and interpolate, so the parenthesization
+        // and spacing live in one translatable format string (the same pattern as
+        // `illuminationCaption`). The locale of resolution is the display locale.
+        let base = String(localized: phaseName)
+        let qualifier = String(localized: kind.name)
+        return LocalizedStringResource(
+            "phase.name.qualified", defaultValue: "\(base) (\(qualifier))",
+            comment: """
+                Full-moon hero headline with a special-moon qualifier in \
+                parentheses, e.g. "Full Moon (Blue Moon)". First %@ is the phase \
+                name, second %@ is the special-moon name.
+                """)
     }
 
     /// The caption under the phase name, e.g. "82.1% illuminated".
