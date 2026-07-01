@@ -162,7 +162,8 @@ nonisolated enum MoonAlmanac {
         // or not it's visible from the user's location (visibility is a later step).
         let eclipse = try Eclipse.searchLunar(after: fullMoon.addingDays(-1))
         if eclipse.kind == .total,
-            abs(eclipse.peak.date.timeIntervalSince(fullMoon.date)) < bloodMoonEclipseWindowSeconds {
+            abs(eclipse.peak.date.timeIntervalSince(fullMoon.date)) < bloodMoonEclipseWindowSeconds
+        {
             kinds.append(.bloodMoon)
         }
 
