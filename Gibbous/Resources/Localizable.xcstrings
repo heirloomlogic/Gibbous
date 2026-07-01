@@ -2912,6 +2912,18 @@
         }
       }
     },
+    "special.bloodMoon" : {
+      "comment" : "Full-moon qualifier: a total lunar eclipse, when the Moon reddens in Earth's shadow.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Blood Moon"
+          }
+        }
+      }
+    },
     "special.blueMoon" : {
       "comment" : "Full-moon qualifier: the second full moon in a calendar month.",
       "localizations" : {

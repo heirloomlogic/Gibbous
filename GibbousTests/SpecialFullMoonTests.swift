@@ -63,6 +63,31 @@ import Testing
         #expect(try Self.classify(Self.utc(2023, 2, 6)) == nil)
     }
 
+    // MARK: Blood moons (total lunar eclipses)
+
+    /// Full moons that host a *total* lunar eclipse are Blood moons, and Blood
+    /// outranks every other qualifier, so it's the headline whatever else applies.
+    @Test(arguments: [
+        (2025, 3, 14),  // "Blood Worm Moon"
+        (2025, 9, 7),
+        (2022, 11, 8),
+    ])
+    func totalLunarEclipseFullMoonsAreBloodMoons(year: Int, month: Int, day: Int) throws {
+        #expect(try Self.classify(Self.utc(year, month, day)) == .bloodMoon)
+    }
+
+    @Test func partialLunarEclipseIsNotABloodMoon() throws {
+        // 2024-09-18 was a *partial* lunar eclipse — the disc doesn't fully redden,
+        // so it isn't a Blood moon. (It's the Harvest moon that year, so it still
+        // classifies — just not as bloodMoon.)
+        #expect(try Self.classify(Self.utc(2024, 9, 18)) != .bloodMoon)
+    }
+
+    @Test func eclipseFreeFullMoonIsNotABloodMoon() throws {
+        // A full moon with no eclipse at all never reads as a Blood moon.
+        #expect(try Self.classify(Self.utc(2023, 2, 6)) != .bloodMoon)
+    }
+
     // MARK: Priority
 
     @Test func mostNotablePicksByDeclarationOrder() {
@@ -70,11 +95,15 @@ import Testing
         #expect(SpecialFullMoonKind.mostNotable(in: [.huntersMoon, .supermoon]) == .huntersMoon)
         #expect(SpecialFullMoonKind.mostNotable(in: [.supermoon]) == .supermoon)
         #expect(SpecialFullMoonKind.mostNotable(in: []) == nil)
+        // Blood moon outranks everything else — it's the rarest, most notable.
+        #expect(SpecialFullMoonKind.mostNotable(in: [.blueMoon, .bloodMoon]) == .bloodMoon)
+        #expect(SpecialFullMoonKind.mostNotable(in: [.supermoon, .bloodMoon]) == .bloodMoon)
     }
 
     // MARK: Names
 
     @Test func namesResolveToEnglishDefaults() {
+        #expect(String(localized: SpecialFullMoonKind.bloodMoon.name) == "Blood Moon")
         #expect(String(localized: SpecialFullMoonKind.blueMoon.name) == "Blue Moon")
         #expect(String(localized: SpecialFullMoonKind.harvestMoon.name) == "Harvest Moon")
         #expect(String(localized: SpecialFullMoonKind.huntersMoon.name) == "Hunter's Moon")
