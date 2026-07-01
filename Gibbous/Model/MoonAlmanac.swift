@@ -142,6 +142,12 @@ nonisolated enum MoonAlmanac {
     /// orbit's perigee" rule lands close to the same place.
     static let supermoonCeilingKM = 360_000.0
 
+    /// How close a total lunar eclipse's peak must fall to the full-moon instant to
+    /// count as *this* full moon's eclipse. One day is generous — an eclipse peaks
+    /// within hours of opposition, and the next eclipse is ~6 months away — so the
+    /// window can't catch an unrelated eclipse.
+    static let bloodMoonEclipseWindowSeconds = 86_400.0
+
     /// Classify `fullMoon` against the formally definable special-moon names,
     /// returning the most notable that applies (see `SpecialFullMoonKind`). All
     /// three tests are geocentric/calendar-based — no observer location needed.
@@ -149,6 +155,16 @@ nonisolated enum MoonAlmanac {
         fullMoon: AstroTime, timeZone: TimeZone
     ) throws -> SpecialFullMoonKind? {
         var kinds: [SpecialFullMoonKind] = []
+
+        // Blood moon: a *total* lunar eclipse falls on this full moon. Only total
+        // eclipses redden the whole disc — partial/penumbral don't — so the kind
+        // must be `.total`. Classified geocentrically: the eclipse occurs, whether
+        // or not it's visible from the user's location (visibility is a later step).
+        let eclipse = try Eclipse.searchLunar(after: fullMoon.addingDays(-1))
+        if eclipse.kind == .total,
+            abs(eclipse.peak.date.timeIntervalSince(fullMoon.date)) < bloodMoonEclipseWindowSeconds {
+            kinds.append(.bloodMoon)
+        }
 
         // Supermoon: the disc is closest (and largest) at the full-moon instant,
         // so the distance must be read there, not at "now".

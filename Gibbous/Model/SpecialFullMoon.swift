@@ -17,6 +17,9 @@ import Foundation
 /// just the most notable, and **declaration order is that priority** — the rarer,
 /// more remarked-upon names win over the common ones.
 nonisolated enum SpecialFullMoonKind: CaseIterable, Equatable, Sendable {
+    /// A full moon in total lunar eclipse — the Moon reddens in Earth's umbra.
+    /// The rarest and most remarked-upon, so it's declared first and outranks all.
+    case bloodMoon
     /// The second full moon in a calendar month (the popular, monthly definition).
     case blueMoon
     /// The full moon nearest the (Northern-Hemisphere) September equinox.
@@ -36,6 +39,10 @@ nonisolated enum SpecialFullMoonKind: CaseIterable, Equatable, Sendable {
     /// a proper name so it reads as a label in "Full Moon (Blue Moon)".
     var name: LocalizedStringResource {
         switch self {
+        case .bloodMoon:
+            return LocalizedStringResource(
+                "special.bloodMoon", defaultValue: "Blood Moon",
+                comment: "Full-moon qualifier: a total lunar eclipse, when the Moon reddens in Earth's shadow.")
         case .blueMoon:
             return LocalizedStringResource(
                 "special.blueMoon", defaultValue: "Blue Moon",
